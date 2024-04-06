@@ -12,3 +12,6 @@
 Passwort angeben, um später Änderungen vorzunehmen (Abmelden, geänderte Anzahl von Begleitpersonen)
 > 2. Administrator: hat Liste aller registrierten Teilnehmer (inkl. Gesamtanzahl von Begleitpersonen)
 und kann einzelne Anmeldungen inspizieren.
+## Plattform zur Authentifizierung
+- Keycloak: https://www.keycloak.org/
+- Auswahl einer anderen Plattform ist zulässig.
