@@ -1,8 +1,13 @@
 using EventService.Server.Core.Entities;
 using EventService.Server.Persistence;
+using Keycloak.AuthServices.Authentication;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables(); 
+
+builder.Configuration
+    .AddEnvironmentVariables()
+    .AddJsonFile("appsettings.json");
 
 // Add services to the container.
 builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfiguration 
@@ -10,28 +15,56 @@ builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfigur
     ConnectionString = builder.Configuration["ConStr-MongoDB"] ?? throw new Exception("No DB-Connectionstring given!"),
     DatabaseName = "EventServiceDB"
 }));
+
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddKeycloakAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+var openIdConnectUrl = $"{builder.Configuration["Keycloak:auth-server-url"]}"
+ + $"realms/{builder.Configuration["Keycloak:realm"]}/"
+ + ".well-known/openid-configuration";
+
+builder.Services.AddSwaggerGen(c =>
+{
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Auth",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.OpenIdConnect,
+        OpenIdConnectUrl = new Uri(openIdConnectUrl),
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Reference = new OpenApiReference
+        {
+            Id = "Bearer",
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+    c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {securityScheme, Array.Empty<string>()}
+    });
+});
 
 var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
 
 app.UseCors(x => x
                .AllowAnyMethod()
                .AllowAnyHeader()
                .AllowAnyOrigin());
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.MapControllers();
 
