@@ -36,7 +36,10 @@ services:
       context: .\..\src\EventPlatform
       dockerfile: EventService.Client/Dockerfile
     ports:
-      - 5101:80
+      - 80:80
+    depends_on:
+      eventservice.server:
+        condition: service_started
   
   eventservice.server:
     environment:
