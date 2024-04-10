@@ -31,7 +31,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     var securityScheme = new OpenApiSecurityScheme
     {
-        Name = "Auth",
+        Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.OpenIdConnect,
         OpenIdConnectUrl = new Uri(openIdConnectUrl),
