@@ -18,5 +18,12 @@ namespace EventService.Server.Controllers
         {
             return await _eventRepository.GetAll();
         }
+
+        [HttpGet(Name = "GetWeatherForecast/{id}")]
+        public async Task<WeatherForecast> Get(Guid id)
+        {
+            return await _eventRepository.GetEntityById(id) ?? new WeatherForecast();
+        }
+        //TODO add CRUD
     }
 }
