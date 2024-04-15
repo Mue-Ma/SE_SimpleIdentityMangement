@@ -7,19 +7,19 @@ namespace EventService.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    [Authorize]
+    //[Authorize]
     public class WeatherForecastController(ILogger<WeatherForecastController> logger, IEventRepository eventRepository) : ControllerBase
     {
         private readonly ILogger<WeatherForecastController> _logger = logger;
         private readonly IEventRepository _eventRepository = eventRepository;
 
-        [HttpGet(Name = "GetWeatherForecast")]
+        [HttpGet]
         public async Task<IEnumerable<WeatherForecast>> Get()
         {
             return await _eventRepository.GetAll();
         }
 
-        [HttpGet(Name = "GetWeatherForecast/{id}")]
+        [HttpGet("{id}")]
         public async Task<WeatherForecast> Get(Guid id)
         {
             return await _eventRepository.GetEntityById(id) ?? new WeatherForecast();

@@ -57,8 +57,8 @@ app.UseCors(x => x
                .AllowAnyHeader()
                .AllowAnyOrigin());
 
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {

@@ -11,8 +11,13 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddOidcAuthentication(options =>
 {
+#if DEBUG
+    options.ProviderOptions.MetadataUrl = "http://localhost:8080/realms/EventPlatform/.well-known/openid-configuration";
+    options.ProviderOptions.Authority = "http://localhost:8080/realms/EventPlatform";
+#else
     options.ProviderOptions.MetadataUrl = "http://localhost/auth/realms/EventPlatform/.well-known/openid-configuration";
     options.ProviderOptions.Authority = "http://localhost/auth/realms/EventPlatform";
+#endif
     options.ProviderOptions.ClientId = "eventplatform-client";
     options.ProviderOptions.ResponseType = "id_token token";
 

@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:19.0.1
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command: 
+      - start-dev 
+      - --import-realm
+    ports:
+      - 8080:8080
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/dev-realm-export.json
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8080"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+
+  mongo-db:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 27017:27017
+  
+  eventservice.client:
+    restart: always
+    build:
+      context: .\..\src\EventPlatform
+      dockerfile: EventService.Client/Dockerfile
+    ports:
+      - 80:80
+    depends_on:
+      eventservice.server:
+        condition: service_started
+  
+  eventservice.server:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: https://+:443;http://+:80
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+      ConStr-MongoDB: mongodb://root:example@mongo-db:27017/
+    volumes:
+      - ~/.aspnet/https:/https:ro
+    expose:
+      - "80"
+      - "443"
+    ports:
+      - "5102:80"
+      - "5202:443"
+    build:
+      context: .\..\src\EventPlatform
+      dockerfile: EventService.Server/Dockerfile
+    depends_on:
+      mongo-db:
+        condition: service_started
+      keycloak:
+        condition: service_healthy
