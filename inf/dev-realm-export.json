@@ -63,6 +63,7 @@
         "composite": true,
         "composites": {
           "realm": [
+            "User",
             "offline_access",
             "uma_authorization"
           ],
@@ -81,6 +82,15 @@
         "id": "0f3e446b-5fe1-48a5-ad45-f9126730c65d",
         "name": "offline_access",
         "description": "${role_offline-access}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "33f030df-8b60-4543-a575-fe7d1728642d",
+        "attributes": {}
+      },
+      {
+        "id": "c3bd889a-75ce-47d9-bb03-617a01db7467",
+        "name": "User",
+        "description": "",
         "composite": false,
         "clientRole": false,
         "containerId": "33f030df-8b60-4543-a575-fe7d1728642d",
@@ -1362,8 +1372,8 @@
     "web-origins",
     "email",
     "profile",
-    "roles",
-    "acr"
+    "acr",
+    "roles"
   ],
   "defaultOptionalClientScopes": [
     "microprofile-jwt",
