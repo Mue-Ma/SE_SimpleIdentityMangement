@@ -4,11 +4,11 @@ namespace EventService.Server.Persistence
 {
     public interface IEventRepository
     {
-        Task AddMany(ICollection<WeatherForecast> obj);
-        Task Add(WeatherForecast obj);
+        Task AddMany(ICollection<Event> obj);
+        Task Add(Event obj);
         Task Delete(Guid id);
-        Task<IEnumerable<WeatherForecast>> GetAll();
-        Task<WeatherForecast?> GetEntityById(Guid id);
-        Task Update(WeatherForecast obj);
+        Task<IEnumerable<Event>> GetAll();
+        Task<Event?> GetEntityById(Guid id);
+        Task Update(Event obj);
     }
 }

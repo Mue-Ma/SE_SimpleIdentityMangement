@@ -6,40 +6,44 @@ namespace EventService.Server.Persistence
     public class EventRepository : IEventRepository
     {
         protected readonly IDbContext Context;
-        protected readonly IMongoCollection<WeatherForecast> EntityDbSet;
+        protected readonly IMongoCollection<Event> EntityDbSet;
         public EventRepository(IDbContext context)
         {
             Context = context;
-            EntityDbSet = Context.GetCollection<WeatherForecast>(typeof(WeatherForecast).Name);
+            EntityDbSet = Context.GetCollection<Event>(typeof(Event).Name);
         }
 
-        public async Task AddMany(ICollection<WeatherForecast> obj)
+        public async Task AddMany(ICollection<Event> obj)
         {
             await Task.Run(() => Context.AddCommand(() => EntityDbSet.InsertManyAsync(obj)));
+            await Context.SaveChanges();
         }
 
-        public async Task Add(WeatherForecast obj)
+        public async Task Add(Event obj)
         {
             await Task.Run(() => Context.AddCommand(() => EntityDbSet.InsertOneAsync(obj)));
+            await Context.SaveChanges();
         }
 
-        public async Task<IEnumerable<WeatherForecast>> GetAll()
+        public async Task<IEnumerable<Event>> GetAll()
         {
-            return await EntityDbSet.Find(Builders<WeatherForecast>.Filter.Empty).ToListAsync();
+            return await EntityDbSet.Find(Builders<Event>.Filter.Empty).ToListAsync();
         }
 
-        public async Task<WeatherForecast?> GetEntityById(Guid id)
+        public async Task<Event?> GetEntityById(Guid id)
         {
-            return await EntityDbSet.Find(Builders<WeatherForecast>.Filter.Eq(x => x.Id, id)).SingleOrDefaultAsync();
+            return await EntityDbSet.Find(Builders<Event>.Filter.Eq(x => x.Id, id)).SingleOrDefaultAsync();
         }
-        public async Task Update(WeatherForecast obj)
+        public async Task Update(Event obj)
         {
-            await Task.Run(() => Context.AddCommand(() => EntityDbSet.ReplaceOneAsync(Builders<WeatherForecast>.Filter.Eq(x => x.Id, obj.Id), obj)));
+            await Task.Run(() => Context.AddCommand(() => EntityDbSet.ReplaceOneAsync(Builders<Event>.Filter.Eq(x => x.Id, obj.Id), obj)));
+            await Context.SaveChanges();
         }
 
         public async Task Delete(Guid id)
         {
-            await Task.Run(() => Context.AddCommand(() => EntityDbSet.DeleteOneAsync(Builders<WeatherForecast>.Filter.Eq(x => x.Id, id))));
+            await Task.Run(() => Context.AddCommand(() => EntityDbSet.DeleteOneAsync(Builders<Event>.Filter.Eq(x => x.Id, id))));
+            await Context.SaveChanges();
         }
 
     }

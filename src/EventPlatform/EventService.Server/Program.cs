@@ -17,6 +17,7 @@ builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfigur
 }));
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IEventSubscriptionRepository, EventSubscriptionRepository>();
 builder.Services.AddKeycloakAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
@@ -73,12 +74,13 @@ IServiceProvider serviceProvider = scope.ServiceProvider;
 var context = serviceProvider.GetRequiredService<IDbContext>();
 var repo = serviceProvider.GetService<IEventRepository>();
 
-await repo!.AddMany(Enumerable.Range(1, 100).Select(index => new WeatherForecast
+await repo!.AddMany(Enumerable.Range(1, 100).Select(index => new Event
 {
-    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-    TemperatureC = Random.Shared.Next(-20, 55),
-    Summary = "Nice"
-}).ToArray());
+    StartDate = DateTime.Now.AddDays(index),
+    EndDate = DateTime.Now.AddDays(index).AddHours(5),
+    Description = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
+    Name = "Event_" + index
+}).ToArray()) ;
 
 await context.SaveChanges();
 
