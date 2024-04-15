@@ -1,17 +1,90 @@
 ﻿@page "/"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
 
 <PageTitle>EventService</PageTitle>
-<ul>
-    <li>
-        <a href="/weather">
-            Test Site
-        </a>
-    </li>
 
-    <li>
-        <a href="/user">
-            User
-        </a>
-    </li>
-</ul>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Event</th>
+            <th>Type</th>
+            <th>Location</th>
+            <th>Date</th>
+            <th>Available Tickets</th>
+            <th>Ticket Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var eventObject in events)
+        {
+        <tr>
+                <td>@eventObject.EventName</td>
+                <td>@eventObject.EventType</td>
+                <td>@eventObject.EventLocation</td>
+                <td>@eventObject.EventDate</td>
+                <td>@eventObject.AvailableTickets</td>
+                <td>@eventObject.TicketPrice</td>
+                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<EventObject> events; 
+
+    protected override void OnInitialized()
+    {
+        events = new List<EventObject>();
+        EventObject footballGame = new EventObject();
+        footballGame.Id = 1;
+        footballGame.EventName = "Real Madrid - Manchester City";
+        footballGame.EventType = "Football Game";
+        footballGame.EventLocation = "Bernabeu, Madrid";
+        footballGame.EventDate = new DateTime(2024, 4, 15, 14, 30, 0);
+        footballGame.AvailableTickets = 80244;
+        footballGame.TicketPrice = 10;
+
+        EventObject concert = new EventObject();
+        concert.EventName = "MTBMB Tour";
+        concert.Id = 2;
+        concert.EventType = "concert";
+        concert.EventLocation = "Olympia Stadion, Munich";
+        concert.EventDate = new DateTime(2024, 4, 15, 14, 30, 0);
+        concert.AvailableTickets = 30000;
+        concert.TicketPrice = 10;
+
+        events.Add(footballGame);
+        events.Add(concert);
+    }
+
+    void NavigateToEventDetails(int id)
+    {
+        NavigationManager.NavigateTo($"EventDetails/{id}");
+    }
+
+
+    public class EventObject
+    {
+    public int Id { get; set; }
+
+    public string EventName { get; set; }
+
+    public string EventType { get; set; } //Konzert, Fußballspiel, etc.
+
+    public string EventLocation { get; set; }
+
+    public DateTime EventDate { get; set; }
+
+    public int AvailableTickets { get; set; }
+
+    public decimal TicketPrice { get; set; }
+    }
+}
+
+
 

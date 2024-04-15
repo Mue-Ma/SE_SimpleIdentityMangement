@@ -1,0 +1,33 @@
+﻿@page "/EventDetails/{id}"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+
+<h1>EventDetails</h1>
+<h3>EventDetails for ID: @Id</h3>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationState;
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var roles = user.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value);
+
+            foreach (var role in roles)
+            {
+                Console.WriteLine($"Role: {role}");
+            }
+        }
+    }
+}
