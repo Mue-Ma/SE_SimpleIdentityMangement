@@ -326,6 +326,14 @@
       ],
       "eventplatform-client": [
         {
+          "id": "1ad57ce0-a937-459f-bbd0-64b8de37263b",
+          "name": "Admin",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "e8aa2cd2-d651-4e08-bab4-40f5ebe8e837",
+          "attributes": {}
+        },
+        {
           "id": "8177479f-20ca-464b-b2fc-179a9a5b3065",
           "name": "User",
           "composite": false,
@@ -720,8 +728,9 @@
             "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true",
-            "claim.name": "resource_access.${client_id}.roles",
-            "jsonType.label": "String"
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "usermodel.clientRoleMapping.clientId": "eventplatform-client"
           }
         },
         {
@@ -733,8 +742,7 @@
           "config": {
             "included.client.audience": "eventplatform-client",
             "id.token.claim": "false",
-            "access.token.claim": "true",
-            "userinfo.token.claim": "false"
+            "access.token.claim": "true"
           }
         }
       ],
@@ -769,6 +777,7 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": true,
       "publicClient": false,
       "frontchannelLogout": false,
       "protocol": "openid-connect",
@@ -790,7 +799,28 @@
         "phone",
         "offline_access",
         "microprofile-jwt"
-      ]
+      ],
+      "authorizationSettings": {
+        "allowRemoteResourceManagement": false,
+        "policyEnforcementMode": "ENFORCING",
+        "resources": [],
+        "policies": [],
+        "scopes": [
+          {
+            "id": "8b1284ad-6512-4ce8-bb52-a69e928415d0",
+            "name": "map-role"
+          },
+          {
+            "id": "b391ba93-938f-42b2-86c4-4bebd95d1bd4",
+            "name": "map-role-client-scope"
+          },
+          {
+            "id": "8c6a9122-ad07-46fb-be3f-158f6d6d2875",
+            "name": "map-role-composite"
+          }
+        ],
+        "decisionStrategy": "UNANIMOUS"
+      }
     },
     {
       "id": "9dc6e369-e2a8-41d4-ab45-2de79e50a924",
