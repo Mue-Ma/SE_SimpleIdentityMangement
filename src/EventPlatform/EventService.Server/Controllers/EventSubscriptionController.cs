@@ -22,6 +22,12 @@ namespace EventService.Server.Controllers
             return await _eventSubscriptionRepository.GetEntityBySubscriptionId(id);
         }
 
+        [HttpGet("[action]/{id}&&{eMail}")]
+        public async Task<IEnumerable<EventSubscription>> GetByEventId(Guid id, string eMail)
+        {
+            return (await _eventSubscriptionRepository.GetEntityBySubscriptionId(id)).Where(s => s.EMail.Equals(eMail));
+        }
+
         [HttpPost]
         public async Task Post([FromBody] EventSubscription eventSubscription)
         {
