@@ -12,33 +12,37 @@ namespace EventService.Server.Controllers
         private readonly IEventRepository _eventRepository = eventRepository;
 
         [HttpGet]
-        public async Task<IEnumerable<Event>> Get()
+        public async Task<ActionResult<IEnumerable<Event>>> Get()
         {
-            return await _eventRepository.GetAll();
+            return Ok(await _eventRepository.GetAll());
         }
 
         [HttpGet("{id}")]
-        public async Task<Event> Get(Guid id)
+        public async Task<ActionResult<Event>> Get(Guid id)
         {
-            return await _eventRepository.GetEntityById(id) ?? new Event();
+            var res = await _eventRepository.GetEntityById(id);
+            return res != null ? Ok(res) : NotFound();
         }
 
         [HttpPost]
-        public async Task Post([FromBody] Event ev)
+        public async Task<ActionResult<Guid>> Post([FromBody] Event ev)
         {
             await _eventRepository.Add(ev);
+            return Ok(ev.Id);
         }
 
         [HttpPut]
-        public async Task Put([FromBody] Event ev)
+        public async Task<ActionResult> Put([FromBody] Event ev)
         {
             await _eventRepository.Update(ev);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id)
         {
             await _eventRepository.Delete(id);
+            return NoContent();
         }
     }
 }

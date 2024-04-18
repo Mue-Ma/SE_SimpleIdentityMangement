@@ -11,39 +11,45 @@ namespace EventService.Server.Controllers
         private readonly IEventSubscriptionRepository _eventSubscriptionRepository = eventSubscriptionRepository;
 
         [HttpGet("[action]/{eMail}")]
-        public async Task<IEnumerable<EventSubscription>> GetByEMail(string eMail)
+        public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEMail(string eMail)
         {
-            return await _eventSubscriptionRepository.GetEntityByEMail(eMail);
+            var res = await _eventSubscriptionRepository.GetEntityByEMail(eMail);
+            return res != null ? Ok(res) : NotFound();
         }
 
         [HttpGet("[action]/{id}")]
-        public async Task<IEnumerable<EventSubscription>> GetByEventId(Guid id)
+        public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEventId(Guid id)
         {
-            return await _eventSubscriptionRepository.GetEntityBySubscriptionId(id);
+            var res = await _eventSubscriptionRepository.GetEntityBySubscriptionId(id);
+            return res != null ? Ok(res) : NotFound();
         }
 
         [HttpGet("[action]/{id}&&{eMail}")]
-        public async Task<EventSubscription> GetByEventIdAndEmail(Guid id, string eMail)
+        public async Task<ActionResult<EventSubscription>> GetByEventIdAndEmail(Guid id, string eMail)
         {
-            return (await _eventSubscriptionRepository.GetEntityBySubscriptionId(id)).First(s => s.EMail.Equals(eMail));
+            var res = (await _eventSubscriptionRepository.GetEntityBySubscriptionId(id)).FirstOrDefault(s => s.EMail.Equals(eMail));
+            return res != null ? Ok(res) : NotFound();
         }
 
         [HttpPost]
-        public async Task Post([FromBody] EventSubscription eventSubscription)
+        public async Task<ActionResult<Guid>> Post([FromBody] EventSubscription eventSubscription)
         {
             await _eventSubscriptionRepository.Add(eventSubscription);
+            return eventSubscription.Id;
         }
 
         [HttpPut]
-        public async Task Put([FromBody] EventSubscription eventSubscription)
+        public async Task<ActionResult> Put([FromBody] EventSubscription eventSubscription)
         {
             await _eventSubscriptionRepository.Update(eventSubscription);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id)
         {
             await _eventSubscriptionRepository.Delete(id);
+            return NoContent();
         }
     }
 }
