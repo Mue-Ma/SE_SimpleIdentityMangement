@@ -6,8 +6,9 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration
-    .AddEnvironmentVariables()
-    .AddJsonFile("appsettings.json");
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables();
+    
 
 // Add services to the container.
 builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfiguration 
@@ -78,9 +79,9 @@ await repo!.AddMany(Enumerable.Range(1, 100).Select(index => new Event
 {
     StartDate = DateTime.Now.AddDays(index),
     EndDate = DateTime.Now.AddDays(index).AddHours(5),
-    Description = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
+    Description = "Das ist ein Testevent",
     Name = "Event_" + index
-}).ToArray()) ;
+}).ToArray());
 
 await context.SaveChanges();
 

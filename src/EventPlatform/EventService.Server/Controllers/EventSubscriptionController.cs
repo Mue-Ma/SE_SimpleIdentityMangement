@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Server.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class EventSubscriptionController(IEventSubscriptionRepository eventSubscriptionRepository) : ControllerBase
     {
         private readonly IEventSubscriptionRepository _eventSubscriptionRepository = eventSubscriptionRepository;

@@ -2,32 +2,122 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
 <h1>EventDetails</h1>
-<h3>EventDetails for ID: @Id</h3>
+
+<dl class="row">
+    <dt class="col-sm-2">Name</dt>
+    <dd class="col-sm-10">@EventToShow.Name</dd>
+
+    <dt class="col-sm-2">Start Date</dt>
+    <dd class="col-sm-10">@EventToShow.StartDate</dd>
+
+    <dt class="col-sm-2">End Date</dt>
+    <dd class="col-sm-10">@EventToShow.EndDate</dd>
+
+    <dt class="col-sm-2">Description</dt>
+    <dd class="col-sm-10">@EventToShow.Description</dd>
+
+    <div class="form-group">
+        <label for="companions">Anzahl Begleiter:</label>
+        <input type="number" id="companions" @bind="Companions" class="form-control" />
+    </div>
+
+    @if (UserRegisteredForEvent)
+    {
+        <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
+    }
+    else
+    {
+        <button class="btn btn-primary" @onclick="DeRegisterForEvent">Abmelden</button>
+    }
+
+</dl>
 
 @code {
     [Parameter]
     public string Id { get; set; }
 
+    public Event EventToShow { get; set; }
+
+    public int Companions { get; set; }
+
+    public bool UserRegisteredForEvent { get; set; }
+
+    public ClaimsPrincipal User { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; }
 
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationState;
-        var user = authState.User;
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        User = authstate.User;
 
-        if (user.Identity.IsAuthenticated)
+        EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/Event/{Id}");
+
+        var eventsOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{User.Identity.Name}");
+
+        if (eventsOfRegisteredUser.Any(x => x.EventId == Guid.Parse(Id)))
         {
-            var roles = user.Claims
-                .Where(c => c.Type == ClaimTypes.Role)
-                .Select(c => c.Value);
-
-            foreach (var role in roles)
-            {
-                Console.WriteLine($"Role: {role}");
-            }
+            UserRegisteredForEvent = true;
         }
+        else
+        {
+            UserRegisteredForEvent = false;
+        }
+    }
+
+    public async Task RegisterForEvent()
+    {
+        EventSubscription subscription = new EventSubscription
+            {
+                EventId = Guid.Parse(Id),
+                EMail = User.Identity.Name,
+                Companions = Companions
+            };
+
+        var test = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscription);
+    }
+
+    public async Task DeRegisterForEvent()
+    {
+        // EventSubscription subscription = new EventSubscription
+        //     {
+        //         EventId = Guid.Parse(Id),
+        //         EMail = User.Identity.Name,
+        //         Companions = Companions
+        //     };
+
+        // var test = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscription);
+    }
+
+
+    public async Task CheckIfUserIsRegisterdForEvent(string email)
+    {
+        var subscriptions = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/EventSubscription/GetByEmail/{email}");
+
+    }
+
+    public class Event
+    {
+        public Guid Id { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    public class EventSubscription
+    {
+        public Guid Id { get; set; }
+        public Guid EventId { get; set; }
+        public string EMail { get; set; } = string.Empty;
+        public int Companions { get; set; }
+
     }
 }

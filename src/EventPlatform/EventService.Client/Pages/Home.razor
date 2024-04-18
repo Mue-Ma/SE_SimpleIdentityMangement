@@ -1,7 +1,6 @@
 ﻿@page "/"
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
-@attribute [AllowAnonymous]
 
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
@@ -11,25 +10,24 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Event</th>
-            <th>Type</th>
-            <th>Location</th>
+            <th>Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
             <th>Date</th>
-            <th>Available Tickets</th>
-            <th>Ticket Price</th>
+            <th>Description</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var eventObject in events)
+        @foreach (var eventObject in events2)
         {
         <tr>
-                <td>@eventObject.EventName</td>
-                <td>@eventObject.EventType</td>
-                <td>@eventObject.EventLocation</td>
-                <td>@eventObject.EventDate</td>
-                <td>@eventObject.AvailableTickets</td>
-                <td>@eventObject.TicketPrice</td>
-                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+                <td>@eventObject.Name</td>
+                <td>@eventObject.Name</td>
+                <td>@eventObject.StartDate</td>
+                <td>@eventObject.EndDate</td>
+                <td>@eventObject.Description</td>
+                <td>@eventObject.Id</td>
+                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Anmelden</button></td>
         </tr>
         }
     </tbody>
@@ -46,8 +44,18 @@
 @code {
     private List<EventObject> events; 
 
-    protected override void OnInitialized()
+    private Event[]? events2;
+
+    protected override async Task OnInitializedAsync()
     {
+        try {
+            events2 = await Http.GetFromJsonAsync<Event[]>(@"http://localhost/eventservice/Event");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
         events = new List<EventObject>();
         EventObject footballGame = new EventObject();
         footballGame.Id = 1;
@@ -71,7 +79,7 @@
         events.Add(concert);
     }
 
-    void NavigateToEventDetails(int id)
+    async Task NavigateToEventDetails(Guid id)
     {
         NavigationManager.NavigateTo($"EventDetails/{id}");
     }
@@ -92,6 +100,15 @@
     public int AvailableTickets { get; set; }
 
     public decimal TicketPrice { get; set; }
+    }
+
+    public class Event
+    {
+        public Guid Id { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
     }
 }
 
