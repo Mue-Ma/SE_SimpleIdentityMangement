@@ -21,7 +21,7 @@ builder.Services.AddOidcAuthentication(options =>
     options.ProviderOptions.ClientId = "eventplatform-client";
     options.ProviderOptions.ResponseType = "id_token token";
 
-    options.UserOptions.NameClaim = "preferred_username";
+    options.UserOptions.NameClaim = "email";
     options.UserOptions.RoleClaim = "roles";
     options.UserOptions.ScopeClaim = "scope";
 });
