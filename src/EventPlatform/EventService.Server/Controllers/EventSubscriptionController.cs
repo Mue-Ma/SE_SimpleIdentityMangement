@@ -23,9 +23,9 @@ namespace EventService.Server.Controllers
         }
 
         [HttpGet("[action]/{id}&&{eMail}")]
-        public async Task<IEnumerable<EventSubscription>> GetByEventId(Guid id, string eMail)
+        public async Task<EventSubscription> GetByEventIdAndEmail(Guid id, string eMail)
         {
-            return (await _eventSubscriptionRepository.GetEntityBySubscriptionId(id)).Where(s => s.EMail.Equals(eMail));
+            return (await _eventSubscriptionRepository.GetEntityBySubscriptionId(id)).First(s => s.EMail.Equals(eMail));
         }
 
         [HttpPost]
