@@ -719,7 +719,7 @@
             "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true",
-            "claim.name": "roles",
+            "claim.name": "resource_access.${client_id}.roles",
             "jsonType.label": "String",
             "usermodel.clientRoleMapping.clientId": "eventplatform-client"
           }
@@ -1284,7 +1284,7 @@
             "userinfo.token.claim": "true",
             "id.token.claim": "true",
             "access.token.claim": "true",
-            "claim.name": "roles",
+            "claim.name": "resource_access.${client_id}.roles",
             "jsonType.label": "String"
           }
         },
