@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
+@using EventService.Client.Models
 
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
@@ -32,6 +33,9 @@
 
 
 
+<h1>Events</h1>
+<button @onclick="() => NavigateToCreateEvent()">Create Event</button>
+
 <table class="table">
     <thead>
         <tr>
@@ -52,7 +56,7 @@
                 <td>@eventObject.EndDate</td>
                 <td>@eventObject.Description</td>
                 <td>@eventObject.Id</td>
-                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Anmelden</button></td>
+                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
         </tr>
         }
     </tbody>
@@ -101,6 +105,15 @@
         NavigationManager.NavigateTo($"EventDetails/{id}");
     }
 
+    async Task NavigateToEventDetailsAdmin(Guid id)
+    {
+        NavigationManager.NavigateTo($"EventDetailsAdmin/{id}");
+    }
+
+    async Task NavigateToCreateEvent()
+    {
+        NavigationManager.NavigateTo("CreateEvent");
+    }
 
     public class EventObject
     {
@@ -117,15 +130,6 @@
     public int AvailableTickets { get; set; }
 
     public decimal TicketPrice { get; set; }
-    }
-
-    public class Event
-    {
-        public Guid Id { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
     }
 }
 

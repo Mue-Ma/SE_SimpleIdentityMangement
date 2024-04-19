@@ -1,40 +1,96 @@
 ﻿@page "/EventDetails/{id}"
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
+@using EventService.Client.Models
 
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider GetAuthenticationStateAsync
-<h1>EventDetails</h1>
+<AuthorizeView>
+    <Authorized>
+    <h1>EventDetails</h1>
 
-<dl class="row">
-    <dt class="col-sm-2">Name</dt>
-    <dd class="col-sm-10">@EventToShow.Name</dd>
+    <dl class="row">
 
-    <dt class="col-sm-2">Start Date</dt>
-    <dd class="col-sm-10">@EventToShow.StartDate</dd>
+        <EditForm Model="@EventToShow">
+            <ChildContent Context="editContext">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <dt class="col-sm-2">End Date</dt>
-    <dd class="col-sm-10">@EventToShow.EndDate</dd>
+            <div class="form-group">
+                <label for="Name">Name</label>
+                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Name" />
+            </div>
 
-    <dt class="col-sm-2">Description</dt>
-    <dd class="col-sm-10">@EventToShow.Description</dd>
+            <div class="form-group">
+                <label for="StartDate">Start Date</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.StartDate" />
+            </div>
 
-    <div class="form-group">
-        <label for="companions">Anzahl Begleiter:</label>
+            <div class="form-group">
+                <label for="EndDate">End Date</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.EndDate" />
+            </div>
+
+            <div class="form-group">
+                <label for="Description">Description</label>
+                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Description" />
+            </div>
+            </ChildContent>
+        </EditForm>
+
+        <div class="col-sm-2">Registrations</div>
+        <input type="number" id="Registrations" @bind="CountRegistrations" class="form-control" />
+
+        <dt class="col-sm-2">Total amount vistors</dt>
+        <input type="number" id="TotalAmontVisitors" @bind="TotalAmontVisitors" class="form-control" />
+
+        <dt class="col-sm-2">Anzahl Begleiter</dt>
         <input type="number" id="companions" @bind="Companions" class="form-control" />
-    </div>
 
-    @if (UserRegisteredForEvent)
-    {
-        <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
-    }
-    else
-    {
-        <button class="btn btn-primary" @onclick="DeRegisterForEvent">Abmelden</button>
-    }
 
-</dl>
+        <div class="form-group">
+            <button class="btn btn-primary" @onclick="UpdateEvent">Aktualisieren</button>
+            <button class="btn btn-primary" @onclick="DeleteEvent">Löschen</button>
+        </div>
+
+        @if (UserRegisteredForEvent)
+        {
+            <div class="form-group">
+                <button class="btn btn-primary" @onclick="DeRegisterForEvent">Abmelden</button>
+                <button class="btn btn-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
+            </div>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
+        }
+
+        <h2></h2>
+        <h2>Event Anmeldungen</h2>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Benutzer</th>
+                    <th>Anzahl Begleiter</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var subscriptionForAdmin in EventSubscriptionsAdminView)
+                {
+                    <tr>
+                            <td>@subscriptionForAdmin.EMail</td>
+                            <td>@subscriptionForAdmin.Companions</td>
+                            <td><button @onclick="() => DeRegisterUserForEventAdmin(subscriptionForAdmin.Id)">Abmelden</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+     </dl>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     [Parameter]
@@ -46,11 +102,18 @@
 
     public bool UserRegisteredForEvent { get; set; }
 
+    public EventSubscription? Subscription { get; set; }
+
     public ClaimsPrincipal User { get; set; }
+
+    public int CountRegistrations { get; set; }
+
+    public int TotalAmontVisitors { get; set; }
+
+    public IEnumerable<EventSubscription> EventSubscriptionsAdminView { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationState { get; set; }
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -60,64 +123,86 @@
 
         EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/Event/{Id}");
 
-        var eventsOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{User.Identity.Name}");
+        var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{User.Identity.Name}");
 
-        if (eventsOfRegisteredUser.Any(x => x.EventId == Guid.Parse(Id)))
+        if (eventSubscriptionOfRegisteredUser.Any(x => x.EventId == Guid.Parse(Id)))
         {
             UserRegisteredForEvent = true;
+            Subscription = eventSubscriptionOfRegisteredUser.First(x => x.EventId == Guid.Parse(Id));
+            Companions = Subscription.Companions;
         }
         else
         {
             UserRegisteredForEvent = false;
         }
+
+        await FetchSubscriptionInfoForAdmin();
+    }
+
+    public async Task FetchSubscriptionInfoForAdmin()
+    {
+        // Fix this
+        EventSubscriptionsAdminView = new List<EventSubscription>();
+        EventSubscriptionsAdminView = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{Id}");
+
+        CountRegistrations = EventSubscriptionsAdminView.Count();
+        TotalAmontVisitors = EventSubscriptionsAdminView.Sum(x => x.Companions) + CountRegistrations;
     }
 
     public async Task RegisterForEvent()
     {
-        EventSubscription subscription = new EventSubscription
+        EventSubscription subscriptionToPost = new EventSubscription
             {
                 EventId = Guid.Parse(Id),
                 EMail = User.Identity.Name,
                 Companions = Companions
             };
 
-        var test = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscription);
+        var response = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscriptionToPost);
+
+        Subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity.Name}");
+
+        UserRegisteredForEvent = true;
+        StateHasChanged();
     }
 
     public async Task DeRegisterForEvent()
     {
-        // EventSubscription subscription = new EventSubscription
-        //     {
-        //         EventId = Guid.Parse(Id),
-        //         EMail = User.Identity.Name,
-        //         Companions = Companions
-        //     };
+        UserRegisteredForEvent = false;
 
-        // var test = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscription);
+        var test = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription.Id}");
+        Subscription = null;
+
+        StateHasChanged();
     }
 
-
-    public async Task CheckIfUserIsRegisterdForEvent(string email)
+    // muss noch auf eine deregister methode zusammengelegt werden
+    public async Task DeRegisterUserForEventAdmin(Guid subscriptionID)
     {
-        var subscriptions = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/EventSubscription/GetByEmail/{email}");
+        UserRegisteredForEvent = false;
 
+        var test = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
+        Subscription = null;
+
+        FetchSubscriptionInfoForAdmin();
+        StateHasChanged();
     }
 
-    public class Event
+    public async Task ChangeCompanions()
     {
-        public Guid Id { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        Subscription.Companions = Companions;
+
+        var response = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
     }
 
-    public class EventSubscription
+    public async Task UpdateEvent()
     {
-        public Guid Id { get; set; }
-        public Guid EventId { get; set; }
-        public string EMail { get; set; } = string.Empty;
-        public int Companions { get; set; }
+        var response = await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
+    }
 
+    public async Task DeleteEvent()
+    {
+        await Http.DeleteAsync($"http://localhost/eventservice/Event/{Id}");
+        NavigationManager.NavigateTo("");
     }
 }

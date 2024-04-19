@@ -1,19 +1,22 @@
-﻿namespace EventService.Client.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace EventService.Client.Models
 {
     public class Event
     {
-        public int Id { get; set; }
+        public Event()
+        {
+            StartDate = DateTime.Now;
+            EndDate = DateTime.Now;
+        }
 
-        public string EventName { get; set; }
-
-        public string EventType { get; set; } //Konzert, Fußballspiel, etc.
-
-        public string EventLocation { get; set; }
-
-        public DateTime EventDate { get; set; }
-
-        public int AvailableTickets { get; set; }
-
-        public decimal TicketPrice { get; set; }
+        public Guid Id { get; set; }
+        [Required]
+        public DateTime StartDate { get; set; }
+        [Required]
+        public DateTime EndDate { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
     }
 }
