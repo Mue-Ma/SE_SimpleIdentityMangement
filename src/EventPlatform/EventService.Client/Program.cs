@@ -1,3 +1,4 @@
+using EventPlatform.Common.Core.Factories;
 using EventService.Client;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
@@ -31,5 +32,6 @@ var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 builder.Services.AddHttpClient("Default", client => client.BaseAddress = baseAddress)
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Default"));
+builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccount>), typeof(KeyCloakAccountFactory));
 
 await builder.Build().RunAsync();

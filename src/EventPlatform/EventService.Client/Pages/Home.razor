@@ -5,7 +5,32 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
+@attribute [AllowAnonymous]
+
 <PageTitle>EventService</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <p>You @context.User.Identity.Name are authorized.</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="User">
+    <Authorized>   
+        <p>You have an 'User' role claim.</p>
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <p>You have an 'Admin' role claim.</p>
+    </Authorized>
+</AuthorizeView>
+
+
 
 <table class="table">
     <thead>
@@ -32,14 +57,6 @@
         }
     </tbody>
 </table>
-
-<AuthorizeView>
-    <p>You are authorized.</p>
-</AuthorizeView>
-
-<AuthorizeView Roles="User">
-    <p>You have an 'User' role claim.</p>
-</AuthorizeView>
 
 @code {
     private List<EventObject> events; 
