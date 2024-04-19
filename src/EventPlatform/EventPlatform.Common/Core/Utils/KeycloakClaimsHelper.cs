@@ -1,5 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace EventPlatform.Common.Core.Utils
 {
@@ -18,15 +21,25 @@ namespace EventPlatform.Common.Core.Utils
                 return Task.FromResult(result);
             }
 
-            var realmAccessClaim = principal.FindFirst((claim) => claim.Type == "roles");
-            var clientRoles = JsonConvert.DeserializeObject<string[]>(realmAccessClaim!.Value);
-
-            foreach (var role in clientRoles!)
+            var resourceAccessValue = principal.FindFirst("resource_access")?.Value;
+            if (String.IsNullOrWhiteSpace(resourceAccessValue))
             {
-                var value = role;
-                if (!string.IsNullOrWhiteSpace(value))
+                return Task.FromResult(result);
+            }
+
+            JArray jsonArray = JArray.Parse(resourceAccessValue);
+
+            // Extract roles
+            foreach (JObject jsonObject in jsonArray)
+            {
+                JToken rolesToken;
+                if (jsonObject.TryGetValue("eventplatform-client", out var account) && account is JObject accountObject &&
+                    accountObject.TryGetValue("roles", out rolesToken) && rolesToken is JArray rolesArray)
                 {
-                    identity.AddClaim(new Claim("roles", value));
+                    foreach (var role in rolesArray)
+                    {
+                        identity.AddClaim(new Claim("roles", role.Value<string>()));
+                    }
                 }
             }
 
