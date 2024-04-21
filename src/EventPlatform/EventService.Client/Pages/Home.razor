@@ -5,23 +5,15 @@
 
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
 
 @attribute [AllowAnonymous]
 
 <PageTitle>EventService</PageTitle>
 
-<AuthorizeView>
-    <Authorized>
-        <p>You @context.User.Identity!.Name are authorized.</p>
-    </Authorized>
-    <NotAuthorized>
-        <p>You are not authorized.</p>
-    </NotAuthorized>
-</AuthorizeView>
-
 <AuthorizeView Roles="User">
     <Authorized>   
-        <p>You have an 'User' role claim.</p>
+        <p>Hello @context.User.Identity!.Name you are registered for the events highlighted in green! </p>
     </Authorized>
 </AuthorizeView>
 
@@ -34,7 +26,9 @@
 
 
 <h1>Events</h1>
-<button @onclick="() => NavigateToCreateEvent()">Create Event</button>
+<AuthorizeView Roles="Admin">
+    <button @onclick="() => NavigateToCreateEvent()">Create Event</button>
+</AuthorizeView>
 
 <table class="table">
     <thead>
@@ -47,57 +41,60 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var eventObject in events2)
+        @foreach (var eventObject in events)
         {
-        <tr>
-                <td>@eventObject.Name</td>
-                <td>@eventObject.Name</td>
-                <td>@eventObject.StartDate</td>
-                <td>@eventObject.EndDate</td>
-                <td>@eventObject.Description</td>
-                <td>@eventObject.Id</td>
-                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
-        </tr>
+            //Abhängig davon ob die aktuelle eventObject Id in eventIdsOfUser ist, soll die Zeile farblich unterlegt werden
+            if (eventIdsOfUser.Contains(eventObject.Id))
+            {
+                <tr style="background-color: lightgreen;">
+                    <td>@eventObject.Name</td>
+                    <td>@eventObject.StartDate</td>
+                    <td>@eventObject.EndDate</td>
+                    <td>@eventObject.Description</td>
+                    <td>@eventObject.Id</td>
+                    <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>@eventObject.Name</td>
+                    <td>@eventObject.StartDate</td>
+                    <td>@eventObject.EndDate</td>
+                    <td>@eventObject.Description</td>
+                    <td>@eventObject.Id</td>
+                    <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+                </tr>
+            }
         }
     </tbody>
 </table>
 
 @code {
-    private List<EventObject> events; 
 
-    private Event[]? events2;
+    private IEnumerable<Event> events = new List<Event>();
+
+    private List<Guid> eventIdsOfUser = new List<Guid>();
 
     protected override async Task OnInitializedAsync()
     {
         try {
-            events2 = await Http.GetFromJsonAsync<Event[]>(@"http://localhost/eventservice/Event");
+            events = await Http.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/Event");
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
         }
 
-        events = new List<EventObject>();
-        EventObject footballGame = new EventObject();
-        footballGame.Id = 1;
-        footballGame.EventName = "Real Madrid - Manchester City";
-        footballGame.EventType = "Football Game";
-        footballGame.EventLocation = "Bernabeu, Madrid";
-        footballGame.EventDate = new DateTime(2024, 4, 15, 14, 30, 0);
-        footballGame.AvailableTickets = 80244;
-        footballGame.TicketPrice = 10;
+        var authState = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        var user = authState.User;
+        //Hole hier die EventSubscription des angemeldeten Users für farbliche Unterlegung angemeldete Events
+        if (user.Identity.IsAuthenticated && user.IsInRole("User"))
+        {
+            var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{user.Identity!.Name}");
 
-        EventObject concert = new EventObject();
-        concert.EventName = "MTBMB Tour";
-        concert.Id = 2;
-        concert.EventType = "concert";
-        concert.EventLocation = "Olympia Stadion, Munich";
-        concert.EventDate = new DateTime(2024, 4, 15, 14, 30, 0);
-        concert.AvailableTickets = 30000;
-        concert.TicketPrice = 10;
-
-        events.Add(footballGame);
-        events.Add(concert);
+            eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
+        }
     }
 
     async Task NavigateToEventDetails(Guid id)
@@ -105,31 +102,9 @@
         NavigationManager.NavigateTo($"EventDetails/{id}");
     }
 
-    async Task NavigateToEventDetailsAdmin(Guid id)
-    {
-        NavigationManager.NavigateTo($"EventDetailsAdmin/{id}");
-    }
-
     async Task NavigateToCreateEvent()
     {
         NavigationManager.NavigateTo("CreateEvent");
-    }
-
-    public class EventObject
-    {
-    public int Id { get; set; }
-
-    public string EventName { get; set; }
-
-    public string EventType { get; set; } //Konzert, Fußballspiel, etc.
-
-    public string EventLocation { get; set; }
-
-    public DateTime EventDate { get; set; }
-
-    public int AvailableTickets { get; set; }
-
-    public decimal TicketPrice { get; set; }
     }
 }
 
