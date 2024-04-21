@@ -11,7 +11,9 @@
 
 <AuthorizeView>
     <dl class="row">
-        <EditForm Model="@EventToShow" Context="editContext">
+        @if (EventToShow != null)
+        {
+            <EditForm Model="@EventToShow" Context="editContext">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -34,7 +36,12 @@
                     <dt class="col-sm-2">Description</dt>
                     <InputText id="Name" class="form-control" @bind-Value="EventToShow.Description" disabled=@IsNormalUser />
                 </div>
-        </EditForm>
+            </EditForm>
+        }
+        else
+        {
+           <p>Event not found</p>
+        }
 
         <AuthorizeView Roles="Admin" Context="innerAdminContext">
 
@@ -75,8 +82,10 @@
         </AuthorizeView>
 
         <AuthorizeView Roles="User" Context="innerUserContext">
-            <dt class="col-sm-2">Anzahl Begleiter</dt>
-            <input type="number" id="companions" @bind="Companions" class="form-control" />
+            <div class="form-group">
+                <dt class="col-sm-2">Anzahl Begleiter</dt>
+                <input type="number" id="companions" @bind="Companions" class="form-control" />
+            </div>
             @if (UserRegisteredForEvent)
             {
                 <div class="form-group">
@@ -88,6 +97,7 @@
             {
                 <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
             }
+
         </AuthorizeView>
     </dl>
 </AuthorizeView>
@@ -101,7 +111,7 @@
 
     public EventSubscription? Subscription { get; set; }
 
-    public ClaimsPrincipal User { get; set; }
+    public ClaimsPrincipal User = new ClaimsPrincipal();
 
     public bool IsNormalUser { get; set; }
 
@@ -109,16 +119,14 @@
 
     public int TotalAmontVisitors { get; set; }
 
-    public Event EventToShow = new Event();
+    public Event? EventToShow; 
 
     public IEnumerable<EventSubscription> EventSubscriptionsAdminView = new List<EventSubscription>();
 
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthenticationState;
+
         var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
         User = authstate.User;
 
@@ -126,15 +134,15 @@
 
         EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/Event/{Id}");
 
-        var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{User.Identity.Name}");
+        var response = await Http.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity!.Name}");
 
-        if (eventSubscriptionOfRegisteredUser.Any(x => x.EventId == Guid.Parse(Id)))
+        if (response.IsSuccessStatusCode)
         {
+            Subscription = await response.Content.ReadFromJsonAsync<EventSubscription>();
+            Companions = Subscription!.Companions;
             UserRegisteredForEvent = true;
-            Subscription = eventSubscriptionOfRegisteredUser.First(x => x.EventId == Guid.Parse(Id));
-            Companions = Subscription.Companions;
         }
-        else
+        else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             UserRegisteredForEvent = false;
         }
@@ -144,7 +152,7 @@
 
     public async Task FetchSubscriptionInfoForAdmin()
     {
-        EventSubscriptionsAdminView = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{Id}");
+        EventSubscriptionsAdminView = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{Id}") ?? new List<EventSubscription>();
 
         CountRegistrations = EventSubscriptionsAdminView.Count();
         TotalAmontVisitors = EventSubscriptionsAdminView.Sum(x => x.Companions) + CountRegistrations;
@@ -155,11 +163,11 @@
         EventSubscription subscriptionToPost = new EventSubscription
             {
                 EventId = Guid.Parse(Id),
-                EMail = User.Identity.Name,
+                EMail = User.Identity!.Name!,
                 Companions = Companions
             };
 
-        var response = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscriptionToPost);
+        await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscriptionToPost);
 
         Subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity.Name}");
 
@@ -171,7 +179,7 @@
     {
         UserRegisteredForEvent = false;
 
-        var test = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription.Id}");
+        await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription!.Id}");
         Subscription = null;
 
         StateHasChanged();
@@ -180,7 +188,7 @@
     public async Task DeRegisterUserForEventAdmin(Guid subscriptionID)
     {
 
-        var test = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
+        await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
 
         await FetchSubscriptionInfoForAdmin();
         StateHasChanged();
@@ -188,14 +196,14 @@
 
     public async Task ChangeCompanions()
     {
-        Subscription.Companions = Companions;
+        Subscription!.Companions = Companions;
 
-        var response = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
+        await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
     }
 
     public async Task UpdateEvent()
     {
-        var response = await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
+        await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
     }
 
     public async Task DeleteEvent()

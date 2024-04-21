@@ -11,24 +11,23 @@
 
 <PageTitle>EventService</PageTitle>
 
+<LogoutComponent />
+
 <AuthorizeView Roles="User">
-    <Authorized>   
+    <Authorized>
+        <hr />
         <p>Hello @context.User.Identity!.Name you are registered for the events highlighted in green! </p>
     </Authorized>
 </AuthorizeView>
 
 <AuthorizeView Roles="Admin">
     <Authorized>
-        <p>You have an 'Admin' role claim.</p>
+        <hr />
+        <button @onclick="() => NavigateToCreateEvent()">Create Event</button>
     </Authorized>
 </AuthorizeView>
 
-
-
-<h1>Events</h1>
-<AuthorizeView Roles="Admin">
-    <button @onclick="() => NavigateToCreateEvent()">Create Event</button>
-</AuthorizeView>
+<hr />
 
 <table class="table">
     <thead>
@@ -79,7 +78,7 @@
     protected override async Task OnInitializedAsync()
     {
         try {
-            events = await Http.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/Event");
+            events = await Http.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/Event") ?? new List<Event>();
         }
         catch (Exception e)
         {
@@ -89,23 +88,27 @@
         var authState = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
         var user = authState.User;
         //Hole hier die EventSubscription des angemeldeten Users für farbliche Unterlegung angemeldete Events
-        if (user.Identity.IsAuthenticated && user.IsInRole("User"))
+        if (user.Identity!.IsAuthenticated && user.IsInRole("User"))
         {
             var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{user.Identity!.Name}");
 
-            eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
+            if (eventSubscriptionOfRegisteredUser != null)
+            {
+                eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
+            }
         }
     }
 
-    async Task NavigateToEventDetails(Guid id)
+    void NavigateToEventDetails(Guid id)
     {
         NavigationManager.NavigateTo($"EventDetails/{id}");
     }
 
-    async Task NavigateToCreateEvent()
+    void NavigateToCreateEvent()
     {
         NavigationManager.NavigateTo("CreateEvent");
     }
+
 }
 
 

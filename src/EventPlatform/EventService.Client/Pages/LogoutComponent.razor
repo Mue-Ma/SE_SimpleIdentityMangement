@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<AuthorizeView>
+    <Authorized>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Event Service</h1>
+            <div>
+                <button @onclick="() => OpenProfile()">Show Profile</button>
+                <button @onclick="BeginSignOut">Log out</button>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Event Service</h1>
+            <button @onclick="BeginSignIn">Log in</button>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/logout");
+    }
+
+    private async Task BeginSignIn(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("authentication/login");
+    }
+
+    private void OpenProfile()
+    {
+        Navigation.NavigateTo("http://localhost:8080/realms/EventPlatform/account/#/personal-info");
+    }
+}
