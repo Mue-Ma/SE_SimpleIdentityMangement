@@ -11,9 +11,10 @@
 
 <AuthorizeView>
     <dl class="row">
+
         @if (EventToShow != null)
         {
-            <EditForm Model="@EventToShow" Context="editContext">
+            <EditForm Model="@EventToShow" Context="editContext" OnValidSubmit="UpdateEvent">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -36,15 +37,27 @@
                     <dt class="col-sm-2">Description</dt>
                     <InputText id="Name" class="form-control" @bind-Value="EventToShow.Description" disabled=@IsNormalUser />
                 </div>
+
+                <AuthorizeView Roles="Admin" Context ="adminContext">
+                    <button class="btn btn-primary" type="submit">Aktualisieren</button>
+                    <button class="btn btn-primary" @onclick="DeleteEvent">Löschen</button>
+                </AuthorizeView>
+
+                @if (!string.IsNullOrEmpty(UpdateMessage))
+                {
+                    <div class="alert alert-success mt-3">
+                        @UpdateMessage
+                    </div>
+                }
+
             </EditForm>
         }
         else
         {
-           <p>Event not found</p>
+            <p>Event not found</p>
         }
 
-        <AuthorizeView Roles="Admin" Context="innerAdminContext">
-
+        <AuthorizeView Roles="Admin" Context="adminContext">
             <div class="form-group">
                 <dt class="col-sm-2">Registrations: </dt>
                 <dd class="col-sm-2">@CountRegistrations</dd>
@@ -53,11 +66,6 @@
             <div class="form-group">
                 <dt class="col-sm-2">Total amount vistors: </dt>
                 <dd class="col-sm-2">@TotalAmontVisitors</dd>
-            </div>
-
-            <div class="form-group">
-                <button class="btn btn-primary" @onclick="UpdateEvent">Aktualisieren</button>
-                <button class="btn btn-primary" @onclick="DeleteEvent">Löschen</button>
             </div>
 
             <h3>Event Anmeldungen</h3>
@@ -101,6 +109,7 @@
         </AuthorizeView>
     </dl>
 </AuthorizeView>
+
 @code {
     [Parameter]
     public string Id { get; set; }
@@ -119,7 +128,9 @@
 
     public int TotalAmontVisitors { get; set; }
 
-    public Event? EventToShow; 
+    public Event? EventToShow;
+
+    public string UpdateMessage { get; set; }
 
     public IEnumerable<EventSubscription> EventSubscriptionsAdminView = new List<EventSubscription>();
 
@@ -179,7 +190,13 @@
     {
         UserRegisteredForEvent = false;
 
-        await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription!.Id}");
+        var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription!.Id}");
+
+        if (!deleteResponse.IsSuccessStatusCode)
+        {
+            string errorMessage = $"Error: {deleteResponse.StatusCode}";
+            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
+        }
         Subscription = null;
 
         StateHasChanged();
@@ -187,8 +204,12 @@
 
     public async Task DeRegisterUserForEventAdmin(Guid subscriptionID)
     {
-
-        await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
+        var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
+        if (!deleteResponse.IsSuccessStatusCode)
+        {
+            string errorMessage = $"Error: {deleteResponse.StatusCode}";
+            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
+        }
 
         await FetchSubscriptionInfoForAdmin();
         StateHasChanged();
@@ -198,17 +219,36 @@
     {
         Subscription!.Companions = Companions;
 
-        await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
+        var putResponse = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
+        if (!putResponse.IsSuccessStatusCode)
+        {
+            string errorMessage = $"Error: {putResponse.StatusCode}";
+            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
+        }
     }
 
     public async Task UpdateEvent()
     {
-        await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
+        var putResponse = await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
+        if (!putResponse.IsSuccessStatusCode)
+        {
+            string errorMessage = $"Error: {putResponse.StatusCode}";
+            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
+        }
+
+        UpdateMessage = "Event erfolgreich aktualisiert!";
     }
 
     public async Task DeleteEvent()
     {
-        await Http.DeleteAsync($"http://localhost/eventservice/Event/{Id}");
-        NavigationManager.NavigateTo("");
+
+        var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/Event/{Id}");
+        if (!deleteResponse.IsSuccessStatusCode)
+        {
+            string errorMessage = $"Error: {deleteResponse.StatusCode}";
+            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
+        }
+
+        NavigationManager.NavigateTo("/");
     }
 }

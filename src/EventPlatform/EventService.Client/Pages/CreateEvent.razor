@@ -39,20 +39,16 @@
 </AuthorizeView>
 
 @code {
-
     private Event eventObject = new Event();
-
-
     private async Task HandleEventCreation()
     {
-        try
+        var response = await Http.PostAsJsonAsync("http://localhost/eventservice/Event", eventObject);
+        if (!response.IsSuccessStatusCode)
         {
-            await Http.PostAsJsonAsync("http://localhost/eventservice/Event", eventObject);
-            NavigationManager.NavigateTo("/");
+            string errorMessage = $"Error: {response.StatusCode}";
+            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-        }
+
+        NavigationManager.NavigateTo("/");
     }
 }
