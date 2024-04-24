@@ -21,7 +21,7 @@ namespace EventPlatform.Common.Core.Utils
                 return Task.FromResult(result);
             }
 
-            var resourceAccessValue = principal.FindFirst("resource_access")?.Value;
+            var resourceAccessValue = principal.FindFirst("realm_access")?.Value;
             if (String.IsNullOrWhiteSpace(resourceAccessValue))
             {
                 return Task.FromResult(result);
@@ -30,11 +30,10 @@ namespace EventPlatform.Common.Core.Utils
             JArray jsonArray = JArray.Parse(resourceAccessValue);
 
             // Extract roles
-            foreach (JObject jsonObject in jsonArray)
+            foreach (JObject jsonObject in jsonArray.Cast<JObject>())
             {
                 JToken rolesToken;
-                if (jsonObject.TryGetValue("eventplatform-client", out var account) && account is JObject accountObject &&
-                    accountObject.TryGetValue("roles", out rolesToken) && rolesToken is JArray rolesArray)
+                if (jsonObject.TryGetValue("roles", out rolesToken) && rolesToken is JArray rolesArray)
                 {
                     foreach (var role in rolesArray)
                     {

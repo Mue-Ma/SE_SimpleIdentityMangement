@@ -34,6 +34,12 @@ namespace EventService.Server.Persistence
         {
             return await EntityDbSet.Find(Builders<Event>.Filter.Eq(x => x.Id, id)).SingleOrDefaultAsync();
         }
+
+        public async Task<Event?> GetByName(string name)
+        {
+            return await EntityDbSet.Find(Builders<Event>.Filter.Eq(x => x.Name, name)).SingleOrDefaultAsync();
+        }
+
         public async Task Update(Event obj)
         {
             await Task.Run(() => Context.AddCommand(() => EntityDbSet.ReplaceOneAsync(Builders<Event>.Filter.Eq(x => x.Id, obj.Id), obj)));
@@ -45,6 +51,5 @@ namespace EventService.Server.Persistence
             await Task.Run(() => Context.AddCommand(() => EntityDbSet.DeleteOneAsync(Builders<Event>.Filter.Eq(x => x.Id, id))));
             await Context.SaveChanges();
         }
-
     }
 }
