@@ -10,5 +10,6 @@ namespace EventService.Server.Persistence
         Task<IEnumerable<Event>> GetAll();
         Task<Event?> GetEntityById(Guid id);
         Task Update(Event obj);
+        Task<Event?> GetByName(string name);
     }
 }

@@ -648,7 +648,8 @@
         "acr",
         "profile",
         "roles",
-        "email"
+        "email",
+        "eventplatform-client-dedicated"
       ],
       "optionalClientScopes": [
         "address",

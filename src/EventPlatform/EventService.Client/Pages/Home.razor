@@ -13,14 +13,13 @@
 
 <LogoutComponent />
 
-<AuthorizeView Roles="User">
-    <Authorized>
-        <hr />
-        <p>Hello @context.User.Identity!.Name you are registered for the events highlighted in green! </p>
+<AuthorizeView Roles="user">
+    <Authorized>   
+        <p>You have an 'User' role claim.</p>
     </Authorized>
 </AuthorizeView>
 
-<AuthorizeView Roles="Admin">
+<AuthorizeView Roles="admin">
     <Authorized>
         <hr />
         <button @onclick="() => NavigateToCreateEvent()">Create Event</button>
