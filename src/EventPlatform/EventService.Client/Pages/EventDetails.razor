@@ -94,10 +94,8 @@
             <div class="form-group">
                 @if (UserRegisteredForEvent)
                 {
-
-                    <button class="btn btn-primary" @onclick="DeregisterForEvent">Abmelden</button>
-                    <button class="btn btn-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
-
+                    <button class="btn btn-outline-primary" @onclick="DeregisterForEvent">Abmelden</button>
+                    <button class="btn btn-outline-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
                 }
                 else
                 {

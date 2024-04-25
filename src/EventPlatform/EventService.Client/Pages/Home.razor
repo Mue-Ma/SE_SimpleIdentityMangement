@@ -11,16 +11,11 @@
 
 <PageTitle>EventService</PageTitle>
 
-<LogoutComponent />
-
 <AuthorizeView Roles="admin">
     <Authorized>
-        <hr />
-        <button @onclick="() => NavigateToCreateEvent()">Create Event</button>
+        <button class="btn btn-primary" @onclick="() => NavigateToCreateEvent()">Create Event</button>
     </Authorized>
 </AuthorizeView>
-
-<hr />
 
 <table class="table">
     <thead>
@@ -29,6 +24,7 @@
             <th>Start Date</th>
             <th>End Date</th>
             <th>Description</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -36,12 +32,12 @@
         {
             //Abhängig davon ob die aktuelle eventObject Id in eventIdsOfUser ist, soll die Zeile farblich unterlegt werden
 
-            <tr style=@(eventIdsOfUser.Contains(eventObject.Id) ? "background-color: lightgreen" : "")>
+            <tr>
                 <td>@eventObject.Name</td>
                 <td>@eventObject.StartDate</td>
                 <td>@eventObject.EndDate</td>
                 <td>@eventObject.Description</td>
-                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+                <td><button class=@(eventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
             </tr>
         }
     </tbody>

@@ -7,17 +7,40 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: #00b09b;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    border-color: #fff;
 }
 
+.btn-outline-primary {
+    color: #00b09b;
+    border-color: #00b09b;
+}
+
+    .btn-outline-primary:hover {
+        color: #fff;
+        background: linear-gradient(to right, #00b09b, #96c93d);
+        border-color: #fff;
+    }
+
+    .btn-check:focus + .btn-outline-primary, .btn-outline-primary:focus {
+        box-shadow: 0 0 0 .25rem #00b09b
+    }
+
+    .btn-check:active + .btn-outline-primary, .btn-check:checked + .btn-outline-primary, .btn-outline-primary.active, .btn-outline-primary.dropdown-toggle.show, .btn-outline-primary:active {
+        color: #fff;
+        background: linear-gradient(to right, #00b09b, #96c93d);
+        border-image: linear-gradient(to right, #00b09b, #96c93d);
+    }
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #00b09b;
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    border-image: linear-gradient(to right, #00b09b, #96c93d);
 }
 
 .content {
@@ -75,14 +98,14 @@ a, .btn-link {
 
     .loading-progress circle {
         fill: none;
-        stroke: #e0e0e0;
+        stroke: #00b09b;
         stroke-width: 0.6rem;
         transform-origin: 50% 50%;
         transform: rotate(-90deg);
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #96c93d;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }

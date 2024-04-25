@@ -7,17 +7,15 @@
 <AuthorizeView>
     <Authorized>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Event Service</h1>
             <div>
-                <button @onclick="() => OpenProfile()">Show Profile</button>
-                <button @onclick="BeginSignOut">Log out</button>
+                <button class="btn btn-primary" @onclick="() => OpenProfile()">Show Profile</button>
+                <button class="btn btn-outline-primary" @onclick="BeginSignOut">Log out</button>
             </div>
         </div>
     </Authorized>
     <NotAuthorized>
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Event Service</h1>
-            <button @onclick="BeginSignIn">Log in</button>
+            <button class="btn btn-primary" @onclick="BeginSignIn">Log in</button>
         </div>
     </NotAuthorized>
 </AuthorizeView>
