@@ -13,11 +13,11 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddOidcAuthentication(options =>
 {
 #if DEBUG
-    options.ProviderOptions.MetadataUrl = "http://localhost:8080/realms/newrealm3/.well-known/openid-configuration";
-    options.ProviderOptions.Authority = "http://localhost:8080/realms/newrealm3";
+    options.ProviderOptions.MetadataUrl = "http://localhost:8080/realms/EventPlatform/.well-known/openid-configuration";
+    options.ProviderOptions.Authority = "http://localhost:8080/realms/EventPlatform";
 #else
-    options.ProviderOptions.MetadataUrl = "http://localhost/auth/realms/newrealm3/.well-known/openid-configuration";
-    options.ProviderOptions.Authority = "http://localhost/auth/realms/newrealm3";
+    options.ProviderOptions.MetadataUrl = "http://localhost/auth/realms/EventPlatform/.well-known/openid-configuration";
+    options.ProviderOptions.Authority = "http://localhost/auth/realms/EventPlatform";
 #endif
     options.ProviderOptions.ClientId = "eventplatform-client";
     options.ProviderOptions.ResponseType = "id_token token";
@@ -33,5 +33,7 @@ builder.Services.AddHttpClient("Default", client => client.BaseAddress = baseAdd
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Default"));
 builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccount>), typeof(KeyCloakAccountFactory));
+
+builder.Services.AddBlazorBootstrap();
 
 await builder.Build().RunAsync();

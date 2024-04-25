@@ -13,12 +13,6 @@
 
 <LogoutComponent />
 
-<AuthorizeView Roles="user">
-    <Authorized>   
-        <p>You have an 'User' role claim.</p>
-    </Authorized>
-</AuthorizeView>
-
 <AuthorizeView Roles="admin">
     <Authorized>
         <hr />
@@ -34,7 +28,6 @@
             <th>Name</th>
             <th>Start Date</th>
             <th>End Date</th>
-            <th>Date</th>
             <th>Description</th>
         </tr>
     </thead>
@@ -42,28 +35,14 @@
         @foreach (var eventObject in events)
         {
             //Abhängig davon ob die aktuelle eventObject Id in eventIdsOfUser ist, soll die Zeile farblich unterlegt werden
-            if (eventIdsOfUser.Contains(eventObject.Id))
-            {
-                <tr style="background-color: lightgreen;">
-                    <td>@eventObject.Name</td>
-                    <td>@eventObject.StartDate</td>
-                    <td>@eventObject.EndDate</td>
-                    <td>@eventObject.Description</td>
-                    <td>@eventObject.Id</td>
-                    <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
-                </tr>
-            }
-            else
-            {
-                <tr>
-                    <td>@eventObject.Name</td>
-                    <td>@eventObject.StartDate</td>
-                    <td>@eventObject.EndDate</td>
-                    <td>@eventObject.Description</td>
-                    <td>@eventObject.Id</td>
-                    <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
-                </tr>
-            }
+
+            <tr style=@(eventIdsOfUser.Contains(eventObject.Id) ? "background-color: lightgreen" : "")>
+                <td>@eventObject.Name</td>
+                <td>@eventObject.StartDate</td>
+                <td>@eventObject.EndDate</td>
+                <td>@eventObject.Description</td>
+                <td><button @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+            </tr>
         }
     </tbody>
 </table>
@@ -76,18 +55,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try {
+        var user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
+
+        try
+        {
             events = await Http.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/Event") ?? new List<Event>();
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
         }
-
-        var authState = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
-        var user = authState.User;
         //Hole hier die EventSubscription des angemeldeten Users für farbliche Unterlegung angemeldete Events
-        if (user.Identity!.IsAuthenticated && user.IsInRole("User"))
+        if (user.Identity!.IsAuthenticated && user.IsInRole("user"))
         {
             var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{user.Identity!.Name}");
 
@@ -109,6 +88,3 @@
     }
 
 }
-
-
-

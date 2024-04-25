@@ -10,6 +10,5 @@ namespace EventService.Server.Core.Entities
         [Required]
         public string EMail { get; set; } = string.Empty;
         public int Companions { get; set; }
-
     }
 }

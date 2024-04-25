@@ -8,7 +8,7 @@
 @inject AuthenticationStateProvider GetAuthenticationStateAsync
 
 <h1>EventDetails</h1>
-
+<Toasts class="p-3" Messages="messages" Delay=5000 Placement="ToastsPlacement.BottomRight" />
 <AuthorizeView>
     <dl class="row">
 
@@ -20,35 +20,28 @@
 
                 <div class="form-group">
                     <dt class="col-sm-2">Event Name</dt>
-                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Name" disabled=@IsNormalUser />
+                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Name" disabled=@IsNotAdmin />
                 </div>
 
                 <div class="form-group">
                     <dt class="col-sm-2">Start Date</dt>
-                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.StartDate" disabled=@IsNormalUser />
+                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.StartDate" disabled=@IsNotAdmin />
                 </div>
 
                 <div class="form-group">
                     <dt class="col-sm-2">End Date</dt>
-                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.EndDate" disabled=@IsNormalUser />
+                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.EndDate" disabled=@IsNotAdmin />
                 </div>
 
                 <div class="form-group">
                     <dt class="col-sm-2">Description</dt>
-                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Description" disabled=@IsNormalUser />
+                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Description" disabled=@IsNotAdmin />
                 </div>
 
-                <AuthorizeView Roles="Admin" Context ="adminContext">
+                <AuthorizeView Roles="admin" Context="adminContext">
                     <button class="btn btn-primary" type="submit">Aktualisieren</button>
                     <button class="btn btn-primary" @onclick="DeleteEvent">Löschen</button>
                 </AuthorizeView>
-
-                @if (!string.IsNullOrEmpty(UpdateMessage))
-                {
-                    <div class="alert alert-success mt-3">
-                        @UpdateMessage
-                    </div>
-                }
 
             </EditForm>
         }
@@ -57,7 +50,9 @@
             <p>Event not found</p>
         }
 
-        <AuthorizeView Roles="Admin" Context="adminContext">
+        <AuthorizeView Roles="admin" Context="adminContext">
+            <hr style="margin-top:20px" />
+            <h2>Aktuelle Anmeldungen</h2>
             <div class="form-group">
                 <dt class="col-sm-2">Registrations: </dt>
                 <dd class="col-sm-2">@CountRegistrations</dd>
@@ -82,30 +77,33 @@
                         <tr>
                             <td>@subscriptionForAdmin.EMail</td>
                             <td>@subscriptionForAdmin.Companions</td>
-                            <td><button @onclick="() => DeRegisterUserForEventAdmin(subscriptionForAdmin.Id)">Abmelden</button></td>
+                            <td><button @onclick="() => DeregisterUserForEventByAdmin(subscriptionForAdmin.Id)">Abmelden</button></td>
                         </tr>
                     }
                 </tbody>
             </table>
         </AuthorizeView>
 
-        <AuthorizeView Roles="User" Context="innerUserContext">
+        <AuthorizeView Roles="user" Context="innerUserContext">
+            <hr style="margin-top:20px" />
+            <h2>Registrierung</h2>
             <div class="form-group">
                 <dt class="col-sm-2">Anzahl Begleiter</dt>
                 <input type="number" id="companions" @bind="Companions" class="form-control" />
             </div>
-            @if (UserRegisteredForEvent)
-            {
-                <div class="form-group">
-                    <button class="btn btn-primary" @onclick="DeRegisterForEvent">Abmelden</button>
-                    <button class="btn btn-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
-                </div>
-            }
-            else
-            {
-                <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
-            }
+            <div class="form-group">
+                @if (UserRegisteredForEvent)
+                {
 
+                    <button class="btn btn-primary" @onclick="DeregisterForEvent">Abmelden</button>
+                    <button class="btn btn-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
+
+                }
+                else
+                {
+                    <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
+                }
+            </div>
         </AuthorizeView>
     </dl>
 </AuthorizeView>
@@ -122,7 +120,7 @@
 
     public ClaimsPrincipal User = new ClaimsPrincipal();
 
-    public bool IsNormalUser { get; set; }
+    public bool IsNotAdmin { get; set; }
 
     public int CountRegistrations { get; set; }
 
@@ -130,19 +128,25 @@
 
     public Event? EventToShow;
 
-    public string UpdateMessage { get; set; }
-
     public IEnumerable<EventSubscription> EventSubscriptionsAdminView = new List<EventSubscription>();
+
+    List<ToastMessage> messages = new List<ToastMessage>();
+
+    private void ShowMessage(ToastType toastType, string text) => messages.Add(CreateToastMessage(toastType, text));
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string text)
+    => new ToastMessage
+        {
+            Type = toastType,
+            Message = text,
+            AutoHide = true
+        };
 
 
     protected override async Task OnInitializedAsync()
     {
-
-        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
-        User = authstate.User;
-
-        IsNormalUser = User.IsInRole("User");
-
+        IsNotAdmin = !User.IsInRole("admin");
+        User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
         EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/Event/{Id}");
 
         var response = await Http.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity!.Name}");
@@ -164,7 +168,6 @@
     public async Task FetchSubscriptionInfoForAdmin()
     {
         EventSubscriptionsAdminView = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{Id}") ?? new List<EventSubscription>();
-
         CountRegistrations = EventSubscriptionsAdminView.Count();
         TotalAmontVisitors = EventSubscriptionsAdminView.Sum(x => x.Companions) + CountRegistrations;
     }
@@ -178,38 +181,41 @@
                 Companions = Companions
             };
 
-        await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscriptionToPost);
+        var res = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscriptionToPost);
+        if (res.IsSuccessStatusCode)
+        {
+            Subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity.Name}");
+            UserRegisteredForEvent = true;
+            ShowMessage(ToastType.Success, $"Registrierung für {Subscription?.Companions + 1} Personen war erfolgreich");
+        }
+        else ShowMessage(ToastType.Danger, $"Etwas is bei der Registrierung schief gegangen.");
 
-        Subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity.Name}");
-
-        UserRegisteredForEvent = true;
         StateHasChanged();
     }
 
-    public async Task DeRegisterForEvent()
+    public async Task DeregisterForEvent()
     {
         UserRegisteredForEvent = false;
 
-        var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription!.Id}");
+        var res = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription!.Id}");
 
-        if (!deleteResponse.IsSuccessStatusCode)
+        if (res.IsSuccessStatusCode)
         {
-            string errorMessage = $"Error: {deleteResponse.StatusCode}";
-            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
+            Subscription = null;
+            ShowMessage(ToastType.Success, $"Abmeldung für {Subscription?.Companions + 1} Personen war erfolgreich");
         }
-        Subscription = null;
+        else ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
+
 
         StateHasChanged();
     }
 
-    public async Task DeRegisterUserForEventAdmin(Guid subscriptionID)
+    public async Task DeregisterUserForEventByAdmin(Guid subscriptionID)
     {
-        var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
-        if (!deleteResponse.IsSuccessStatusCode)
-        {
-            string errorMessage = $"Error: {deleteResponse.StatusCode}";
-            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
-        }
+        var res = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
+
+        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Abmeldung der Registrierung {subscriptionID} war erfolgreich");
+        else ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
 
         await FetchSubscriptionInfoForAdmin();
         StateHasChanged();
@@ -218,25 +224,17 @@
     public async Task ChangeCompanions()
     {
         Subscription!.Companions = Companions;
+        var res = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
 
-        var putResponse = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
-        if (!putResponse.IsSuccessStatusCode)
-        {
-            string errorMessage = $"Error: {putResponse.StatusCode}";
-            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
-        }
+        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung der Beigelieter auf {Subscription?.Companions + 1} Personen war erfolgreich");
+        else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
 
     public async Task UpdateEvent()
     {
-        var putResponse = await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
-        if (!putResponse.IsSuccessStatusCode)
-        {
-            string errorMessage = $"Error: {putResponse.StatusCode}";
-            NavigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
-        }
-
-        UpdateMessage = "Event erfolgreich aktualisiert!";
+        var res = await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
+        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung des Events war erfolgreich");
+        else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
 
     public async Task DeleteEvent()
