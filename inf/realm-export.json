@@ -27,7 +27,7 @@
     "oauth2DeviceCodeLifespan": "600",
     "parRequestUriLifespan": "60",
     "clientSessionMaxLifespan": "0",
-    "frontendUrl": "http://localhost/auth",
+    "frontendUrl": "http://localhost",
     "acr.loa.map": "[]"
   },
   "defaultRole": {
