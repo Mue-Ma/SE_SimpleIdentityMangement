@@ -7,7 +7,6 @@ namespace EventService.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class EventController(IEventRepository eventRepository) : ControllerBase
     {
         private readonly IEventRepository _eventRepository = eventRepository;
@@ -46,7 +45,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         public async Task<ActionResult> Put([FromBody] Event ev)
         {
             await _eventRepository.Update(ev);
@@ -54,7 +53,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         public async Task<ActionResult> Delete(Guid id)
         {
             await _eventRepository.Delete(id);

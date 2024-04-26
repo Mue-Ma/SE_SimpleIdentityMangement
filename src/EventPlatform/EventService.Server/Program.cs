@@ -21,7 +21,7 @@ builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfigur
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventSubscriptionRepository, EventSubscriptionRepository>();
-builder.Services.AddScoped<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
+builder.Services.AddTransient<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
 builder.Services.AddKeycloakAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
