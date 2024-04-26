@@ -42,7 +42,7 @@
     private Event eventObject = new Event();
     private async Task HandleEventCreation()
     {
-        var response = await Http.PostAsJsonAsync("http://localhost/eventservice/Event", eventObject);
+        var response = await Http.PostAsJsonAsync("http://localhost/eventservice/api/Event", eventObject);
         if (!response.IsSuccessStatusCode)
         {
             string errorMessage = $"Error: {response.StatusCode}";

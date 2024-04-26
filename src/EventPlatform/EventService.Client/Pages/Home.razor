@@ -58,7 +58,7 @@
 
         try
         {
-            events = await Http.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/Event") ?? new List<Event>();
+            events = await Http.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/api/Event") ?? new List<Event>();
         }
         catch (Exception e)
         {

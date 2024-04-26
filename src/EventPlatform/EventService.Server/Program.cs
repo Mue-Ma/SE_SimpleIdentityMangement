@@ -1,6 +1,8 @@
 using EventService.Server.Core.Entities;
+using EventService.Server.Core.Transformations;
 using EventService.Server.Persistence;
 using Keycloak.AuthServices.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,7 @@ builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfigur
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventSubscriptionRepository, EventSubscriptionRepository>();
+builder.Services.AddScoped<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
 builder.Services.AddKeycloakAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
@@ -59,8 +62,8 @@ app.UseCors(x => x
                .AllowAnyHeader()
                .AllowAnyOrigin());
 
-//app.UseAuthentication();
-//app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {

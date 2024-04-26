@@ -1,23 +1,26 @@
 using EventService.Server.Core.Entities;
 using EventService.Server.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    //[Authorize]
+    [Route("api/[controller]")]
+    [Authorize]
     public class EventController(IEventRepository eventRepository) : ControllerBase
     {
         private readonly IEventRepository _eventRepository = eventRepository;
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Event>>> Get()
         {
             return Ok(await _eventRepository.GetAll());
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Event>> Get(Guid id)
         {
             var res = await _eventRepository.GetEntityById(id);
@@ -25,6 +28,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<Guid>> Post([FromBody] Event ev)
         {
             if (await _eventRepository.GetByName(ev.Name) != null) BadRequest("Eventname existiert bereits!");
@@ -42,6 +46,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Put([FromBody] Event ev)
         {
             await _eventRepository.Update(ev);
@@ -49,6 +54,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Delete(Guid id)
         {
             await _eventRepository.Delete(id);

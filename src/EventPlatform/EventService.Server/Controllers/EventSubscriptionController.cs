@@ -1,11 +1,13 @@
 ﻿using EventService.Server.Core.Entities;
 using EventService.Server.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class EventSubscriptionController(IEventSubscriptionRepository eventSubscriptionRepository) : ControllerBase
     {
         private readonly IEventSubscriptionRepository _eventSubscriptionRepository = eventSubscriptionRepository;
@@ -18,6 +20,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpGet("[action]/{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEventId(Guid id)
         {
             var res = await _eventSubscriptionRepository.GetEntityBySubscriptionId(id);

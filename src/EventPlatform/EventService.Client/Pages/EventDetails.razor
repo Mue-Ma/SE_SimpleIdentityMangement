@@ -132,7 +132,7 @@
         User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
 
         IsNotAdmin = !User.IsInRole("admin");
-        EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/Event/{Id}");
+        EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/api/Event/{Id}");
 
         var response = await Http.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity!.Name}");
 
@@ -227,7 +227,7 @@
 
     private async Task UpdateEvent()
     {
-        var res = await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
+        var res = await Http.PutAsJsonAsync($"http://localhost/eventservice/api/Event", EventToShow);
         if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung des Events war erfolgreich");
         else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
@@ -235,7 +235,7 @@
     private async Task DeleteEvent()
     {
 
-        var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/Event/{Id}");
+        var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/api/Event/{Id}");
         if (!deleteResponse.IsSuccessStatusCode)
         {
             string errorMessage = $"Error: {deleteResponse.StatusCode}";
