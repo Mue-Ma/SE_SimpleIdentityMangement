@@ -20,7 +20,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpGet("[action]/{id}")]
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEventId(Guid id)
         {
             var res = await _eventSubscriptionRepository.GetEntityBySubscriptionId(id);

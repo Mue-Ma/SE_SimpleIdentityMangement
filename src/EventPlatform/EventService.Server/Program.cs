@@ -1,8 +1,7 @@
 using EventService.Server.Core.Entities;
-using EventService.Server.Core.Transformations;
 using EventService.Server.Persistence;
 using Keycloak.AuthServices.Authentication;
-using Microsoft.AspNetCore.Authentication;
+using Keycloak.AuthServices.Common;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,8 +20,14 @@ builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfigur
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventSubscriptionRepository, EventSubscriptionRepository>();
-builder.Services.AddTransient<IClaimsTransformation, KeycloakRolesClaimsTransformation>();
-builder.Services.AddKeycloakAuthentication(builder.Configuration);
+builder.Services.AddKeycloakAuthentication(new KeycloakAuthenticationOptions
+{
+    SslRequired = "none",
+    Realm = "EventPlatform",
+    AuthServerUrl = "http://keycloak:8080/",
+    Resource = "eventplatform-client",
+    RolesSource = RolesClaimTransformationSource.Realm
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

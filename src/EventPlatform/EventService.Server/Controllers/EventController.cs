@@ -27,7 +27,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<Guid>> Post([FromBody] Event ev)
         {
             if (await _eventRepository.GetByName(ev.Name) != null) BadRequest("Eventname existiert bereits!");
@@ -45,7 +45,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpPut]
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Put([FromBody] Event ev)
         {
             await _eventRepository.Update(ev);
@@ -53,7 +53,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult> Delete(Guid id)
         {
             await _eventRepository.Delete(id);
