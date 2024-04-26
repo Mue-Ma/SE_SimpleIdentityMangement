@@ -29,12 +29,11 @@ namespace EventPlatform.Common.Core.Utils
             // Extract roles
             foreach (JObject jsonObject in jsonArray.Cast<JObject>())
             {
-                JToken rolesToken;
-                if (jsonObject.TryGetValue("roles", out rolesToken) && rolesToken is JArray rolesArray)
+                if (jsonObject.TryGetValue("roles", out JToken? rolesToken) && rolesToken is JArray rolesArray)
                 {
                     foreach (var role in rolesArray)
                     {
-                        identity.AddClaim(new Claim("roles", role.Value<string>()));
+                        identity.AddClaim(new Claim("roles", role.Value<string>()!));
                     }
                 }
             }

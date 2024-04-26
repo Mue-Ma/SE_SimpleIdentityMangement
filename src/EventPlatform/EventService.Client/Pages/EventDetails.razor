@@ -113,43 +113,24 @@
 @code {
     [Parameter]
     public Guid Id { get; set; }
-
+    public bool IsNotAdmin { get; set; }
+    public bool UserRegisteredForEvent { get; set; }
+    public int CountRegistrations { get; set; }
+    public int TotalAmontVisitors { get; set; }
     public int Companions { get; set; }
 
-    public bool UserRegisteredForEvent { get; set; }
-
     public EventSubscription? Subscription { get; set; }
-
-    public ClaimsPrincipal User = new ClaimsPrincipal();
-
-    public bool IsNotAdmin { get; set; }
-
-    public int CountRegistrations { get; set; }
-
-    public int TotalAmontVisitors { get; set; }
-
-    public Event? EventToShow;
+    public ClaimsPrincipal? User { get; set; }
+    public Event? EventToShow { get; set; }
 
     public IEnumerable<EventSubscription> EventSubscriptionsAdminView = new List<EventSubscription>();
-
     List<ToastMessage> messages = new List<ToastMessage>();
-
-    private void ShowMessage(ToastType toastType, string text) => messages.Add(CreateToastMessage(toastType, text));
-
-    private ToastMessage CreateToastMessage(ToastType toastType, string text)
-    => new ToastMessage
-        {
-            Type = toastType,
-            Message = text,
-            AutoHide = true
-        };
-
 
     protected override async Task OnInitializedAsync()
     {
 
         User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
-       
+
         IsNotAdmin = !User.IsInRole("admin");
         EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/Event/{Id}");
 
@@ -169,26 +150,36 @@
         await FetchSubscriptionInfoForAdmin();
     }
 
-    public async Task FetchSubscriptionInfoForAdmin()
-    {
+    private void ShowMessage(ToastType toastType, string text) => messages.Add(CreateToastMessage(toastType, text));
+
+    private ToastMessage CreateToastMessage(ToastType toastType, string text)
+    => new ToastMessage
+        {
+            Type = toastType,
+            Message = text,
+            AutoHide = true
+        };
+
+    private async Task FetchSubscriptionInfoForAdmin()
+    {   if (IsNotAdmin) return;
         EventSubscriptionsAdminView = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{Id}") ?? new List<EventSubscription>();
         CountRegistrations = EventSubscriptionsAdminView.Count();
         TotalAmontVisitors = EventSubscriptionsAdminView.Sum(x => x.Companions) + CountRegistrations;
     }
 
-    public async Task RegisterForEvent()
+    private async Task RegisterForEvent()
     {
         EventSubscription subscriptionToPost = new EventSubscription
             {
                 EventId = Id,
-                EMail = User.Identity!.Name!,
+                EMail = User!.Identity!.Name!,
                 Companions = Companions
             };
 
         var res = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscriptionToPost);
         if (res.IsSuccessStatusCode)
         {
-            Subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity.Name}");
+            Subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User!.Identity.Name}");
             UserRegisteredForEvent = true;
             ShowMessage(ToastType.Success, $"Registrierung für {Subscription?.Companions + 1} Personen war erfolgreich");
         }
@@ -197,7 +188,7 @@
         StateHasChanged();
     }
 
-    public async Task DeregisterForEvent()
+    private async Task DeregisterForEvent()
     {
         UserRegisteredForEvent = false;
 
@@ -214,7 +205,7 @@
         StateHasChanged();
     }
 
-    public async Task DeregisterUserForEventByAdmin(Guid subscriptionID)
+    private async Task DeregisterUserForEventByAdmin(Guid subscriptionID)
     {
         var res = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
 
@@ -225,7 +216,7 @@
         StateHasChanged();
     }
 
-    public async Task ChangeCompanions()
+    private async Task ChangeCompanions()
     {
         Subscription!.Companions = Companions;
         var res = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
@@ -234,14 +225,14 @@
         else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
 
-    public async Task UpdateEvent()
+    private async Task UpdateEvent()
     {
         var res = await Http.PutAsJsonAsync($"http://localhost/eventservice/Event", EventToShow);
         if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung des Events war erfolgreich");
         else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
 
-    public async Task DeleteEvent()
+    private async Task DeleteEvent()
     {
 
         var deleteResponse = await Http.DeleteAsync($"http://localhost/eventservice/Event/{Id}");

@@ -42,15 +42,15 @@
 
 @code {
     [CascadingParameter]
-    private Task<AuthenticationState> AuthenticationState { get; set; }
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    public ClaimsPrincipal AuthenticatedUser { get; set; }
-    public AccessToken AccessToken { get; set; }
+    public ClaimsPrincipal? AuthenticatedUser { get; set; }
+    public AccessToken? AccessToken { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        var state = await AuthenticationState;
+        var state = await AuthenticationState!;
         var accessTokenResult = await AuthorizationService.RequestAccessToken();
 
         if (!accessTokenResult.TryGetToken(out var token))
@@ -76,7 +76,6 @@
         var base64Payload = payload.Replace('-', '+').Replace('_', '/')
             .PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
 
-        return JsonSerializer.Deserialize<IDictionary<string, object>>(
-            Convert.FromBase64String(base64Payload));
+        return JsonSerializer.Deserialize<IDictionary<string, object>>(Convert.FromBase64String(base64Payload))!;
     }
 }
