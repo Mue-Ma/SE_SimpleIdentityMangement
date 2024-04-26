@@ -1,4 +1,4 @@
-﻿@page "/EventDetails/{id}"
+﻿@page "/EventDetails/{id:guid}"
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using EventService.Client.Models
@@ -48,7 +48,7 @@
             <AuthorizeView Roles="admin" Context="adminContext">
 
                 <h2>Aktuelle Anmeldungen</h2>
-                <hr style="margin-top:20px" />
+                <hr/>
 
                 <div class="form-group">
                     <dt class="col-sm-2">Registrierungen: </dt>
@@ -84,7 +84,7 @@
 
             <AuthorizeView Roles="user" Context="innerUserContext">
                 <h2>Registrierung</h2>
-                <hr style="margin-top:20px" />
+                <hr/>
 
                 <div class="form-group">
                     <dt class="col-sm-2">Anzahl Begleiter</dt>
