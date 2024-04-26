@@ -27,7 +27,7 @@ namespace EventService.Server.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         public async Task<ActionResult<Guid>> Post([FromBody] Event ev)
         {
             if (await _eventRepository.GetByName(ev.Name) != null) BadRequest("Eventname existiert bereits!");
