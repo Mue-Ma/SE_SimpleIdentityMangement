@@ -39,76 +39,80 @@
                 </div>
 
                 <AuthorizeView Roles="admin" Context="adminContext">
-                    <button class="btn btn-primary" type="submit">Aktualisieren</button>
-                    <button class="btn btn-primary" @onclick="DeleteEvent">Löschen</button>
+                    <button class="btn btn-outline-primary" type="submit">Aktualisieren</button>
+                    <button class="btn btn-outline-primary" @onclick="DeleteEvent">Löschen</button>
                 </AuthorizeView>
 
             </EditForm>
+
+            <AuthorizeView Roles="admin" Context="adminContext">
+
+                <h2>Aktuelle Anmeldungen</h2>
+                <hr style="margin-top:20px" />
+
+                <div class="form-group">
+                    <dt class="col-sm-2">Registrierungen: </dt>
+                    <dd class="col-sm-2">@CountRegistrations</dd>
+                </div>
+
+                <div class="form-group">
+                    <dt class="col-sm-2">Gesamtbesucheranzahl: </dt>
+                    <dd class="col-sm-2">@TotalAmontVisitors</dd>
+                </div>
+                <div class="form-group">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Benutzer</th>
+                                <th>Anzahl Begleiter</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var subscriptionForAdmin in EventSubscriptionsAdminView)
+                            {
+                                <tr>
+                                    <td>@subscriptionForAdmin.EMail</td>
+                                    <td>@subscriptionForAdmin.Companions</td>
+                                    <td><button class="btn btn-outline-primary" @onclick="() => DeregisterUserForEventByAdmin(subscriptionForAdmin.Id)">Abmelden</button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </AuthorizeView>
+
+            <AuthorizeView Roles="user" Context="innerUserContext">
+                <h2>Registrierung</h2>
+                <hr style="margin-top:20px" />
+
+                <div class="form-group">
+                    <dt class="col-sm-2">Anzahl Begleiter</dt>
+                    <input type="number" id="companions" @bind="Companions" class="form-control" />
+                </div>
+                <div class="form-group">
+                    @if (UserRegisteredForEvent)
+                    {
+                        <button class="btn btn-outline-primary" @onclick="DeregisterForEvent">Abmelden</button>
+                        <button class="btn btn-outline-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
+                    }
+                </div>
+            </AuthorizeView>
         }
         else
         {
             <p>Event not found</p>
         }
-
-        <AuthorizeView Roles="admin" Context="adminContext">
-            <hr style="margin-top:20px" />
-            <h2>Aktuelle Anmeldungen</h2>
-            <div class="form-group">
-                <dt class="col-sm-2">Registrations: </dt>
-                <dd class="col-sm-2">@CountRegistrations</dd>
-            </div>
-
-            <div class="form-group">
-                <dt class="col-sm-2">Total amount vistors: </dt>
-                <dd class="col-sm-2">@TotalAmontVisitors</dd>
-            </div>
-
-            <h3>Event Anmeldungen</h3>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Benutzer</th>
-                        <th>Anzahl Begleiter</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var subscriptionForAdmin in EventSubscriptionsAdminView)
-                    {
-                        <tr>
-                            <td>@subscriptionForAdmin.EMail</td>
-                            <td>@subscriptionForAdmin.Companions</td>
-                            <td><button @onclick="() => DeregisterUserForEventByAdmin(subscriptionForAdmin.Id)">Abmelden</button></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </AuthorizeView>
-
-        <AuthorizeView Roles="user" Context="innerUserContext">
-            <hr style="margin-top:20px" />
-            <h2>Registrierung</h2>
-            <div class="form-group">
-                <dt class="col-sm-2">Anzahl Begleiter</dt>
-                <input type="number" id="companions" @bind="Companions" class="form-control" />
-            </div>
-            <div class="form-group">
-                @if (UserRegisteredForEvent)
-                {
-                    <button class="btn btn-outline-primary" @onclick="DeregisterForEvent">Abmelden</button>
-                    <button class="btn btn-outline-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
-                }
-                else
-                {
-                    <button class="btn btn-primary" @onclick="RegisterForEvent">Anmelden</button>
-                }
-            </div>
-        </AuthorizeView>
     </dl>
 </AuthorizeView>
 
 @code {
     [Parameter]
-    public string Id { get; set; }
+    public Guid Id { get; set; }
 
     public int Companions { get; set; }
 
@@ -143,8 +147,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        IsNotAdmin = !User.IsInRole("admin");
+
         User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
+       
+        IsNotAdmin = !User.IsInRole("admin");
         EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/Event/{Id}");
 
         var response = await Http.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity!.Name}");
@@ -174,7 +180,7 @@
     {
         EventSubscription subscriptionToPost = new EventSubscription
             {
-                EventId = Guid.Parse(Id),
+                EventId = Id,
                 EMail = User.Identity!.Name!,
                 Companions = Companions
             };

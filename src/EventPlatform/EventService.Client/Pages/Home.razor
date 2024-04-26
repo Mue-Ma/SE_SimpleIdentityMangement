@@ -11,9 +11,15 @@
 
 <PageTitle>EventService</PageTitle>
 
+<h1>EventOverview</h1>
+
 <AuthorizeView Roles="admin">
     <Authorized>
-        <button class="btn btn-primary" @onclick="() => NavigateToCreateEvent()">Create Event</button>
+        <button class="btn btn-primary" 
+        style=" position: fixed; bottom: 40px; right: 40px; font-size: large; font-weight: 600; border-radius: 50px; padding: 15px" 
+        @onclick="() => NavigateToCreateEvent()">
+            Create Event
+        </button>
     </Authorized>
 </AuthorizeView>
 
@@ -30,8 +36,6 @@
     <tbody>
         @foreach (var eventObject in events)
         {
-            //Abhängig davon ob die aktuelle eventObject Id in eventIdsOfUser ist, soll die Zeile farblich unterlegt werden
-
             <tr>
                 <td>@eventObject.Name</td>
                 <td>@eventObject.StartDate</td>
