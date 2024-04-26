@@ -50,7 +50,6 @@
 @code {
 
     private IEnumerable<Event> events = new List<Event>();
-
     private List<Guid> eventIdsOfUser = new List<Guid>();
 
     protected override async Task OnInitializedAsync()
@@ -77,12 +76,12 @@
         }
     }
 
-    void NavigateToEventDetails(Guid id)
+    private void NavigateToEventDetails(Guid id)
     {
         NavigationManager.NavigateTo($"EventDetails/{id}");
     }
 
-    void NavigateToCreateEvent()
+    private void NavigateToCreateEvent()
     {
         NavigationManager.NavigateTo("CreateEvent");
     }
