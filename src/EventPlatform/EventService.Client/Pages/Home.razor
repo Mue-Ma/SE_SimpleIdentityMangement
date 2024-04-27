@@ -6,22 +6,13 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject IHttpClientFactory HttpClientFactory
 
 @attribute [AllowAnonymous]
 
 <PageTitle>EventService</PageTitle>
 
 <h1>EventOverview</h1>
-
-<AuthorizeView Roles="admin">
-    <Authorized>
-        <button class="btn btn-primary" 
-        style=" position: fixed; bottom: 40px; right: 40px; font-size: large; font-weight: 600; border-radius: 50px; padding: 15px" 
-        @onclick="() => NavigateToCreateEvent()">
-            Create Event
-        </button>
-    </Authorized>
-</AuthorizeView>
 
 <table class="table">
     <thead>
@@ -47,6 +38,16 @@
     </tbody>
 </table>
 
+<AuthorizeView Roles="admin">
+    <Authorized>
+        <button class="btn btn-primary"
+                style=" position: fixed; bottom: 40px; right: 40px; font-size: large; font-weight: 600; border-radius: 50px; padding: 15px"
+                @onclick="() => NavigateToCreateEvent()">
+            Create Event
+        </button>
+    </Authorized>
+</AuthorizeView>
+
 @code {
 
     private IEnumerable<Event> events = new List<Event>();
@@ -54,26 +55,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
+        var publicHttp = HttpClientFactory.CreateClient("Public");
+        events = await publicHttp.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/api/Event") ?? new List<Event>();
 
-        try
-        {
-            events = await Http.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/api/Event") ?? new List<Event>();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-        }
-        //Hole hier die EventSubscription des angemeldeten Users für farbliche Unterlegung angemeldete Events
-        if (user.Identity!.IsAuthenticated && user.IsInRole("user"))
-        {
-            var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{user.Identity!.Name}");
-
-            if (eventSubscriptionOfRegisteredUser != null)
-            {
-                eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
-            }
-        }
+        var user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User;
+        LoadSubscriptions(user);
     }
 
     private void NavigateToEventDetails(Guid id)
@@ -86,4 +72,16 @@
         NavigationManager.NavigateTo("CreateEvent");
     }
 
+    private async void LoadSubscriptions(ClaimsPrincipal? user)
+    { 
+        if (user != null && user.Identity!.IsAuthenticated && user.IsInRole("user"))
+        {
+            var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{user.Identity!.Name}");
+
+            if (eventSubscriptionOfRegisteredUser != null)
+            {
+                eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
+            }
+        }
+    }
 }

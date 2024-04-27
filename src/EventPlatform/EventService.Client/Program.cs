@@ -29,9 +29,11 @@ builder.Services.AddOidcAuthentication(options =>
 
 var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 
+builder.Services.AddHttpClient("Public", client => client.BaseAddress = baseAddress);
 builder.Services.AddHttpClient("Default", client => client.BaseAddress = baseAddress)
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Default"));
+
 builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccount>), typeof(KeyCloakAccountFactory));
 
 builder.Services.AddBlazorBootstrap();
