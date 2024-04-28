@@ -1,4 +1,6 @@
-﻿using MongoDB.Driver;
+﻿using EventService.Server.Core.Configurations;
+using EventService.Server.Persistence.Contracts;
+using MongoDB.Driver;
 
 namespace EventService.Server.Persistence
 {

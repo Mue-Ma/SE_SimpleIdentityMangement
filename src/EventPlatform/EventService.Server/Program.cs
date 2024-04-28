@@ -1,5 +1,7 @@
+using EventService.Server.Core.Configurations;
 using EventService.Server.Core.Entities;
 using EventService.Server.Persistence;
+using EventService.Server.Persistence.Contracts;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Common;
 using Microsoft.OpenApi.Models;

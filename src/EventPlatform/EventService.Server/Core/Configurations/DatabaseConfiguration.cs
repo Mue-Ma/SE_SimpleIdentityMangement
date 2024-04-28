@@ -1,4 +1,4 @@
-﻿namespace EventService.Server.Persistence
+﻿namespace EventService.Server.Core.Configurations
 {
     public class DatabaseConfiguration
     {

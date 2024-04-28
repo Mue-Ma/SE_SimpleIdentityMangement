@@ -1,6 +1,6 @@
 ﻿using MongoDB.Driver;
 
-namespace EventService.Server.Persistence
+namespace EventService.Server.Persistence.Contracts
 {
     public interface IDbContext
     {

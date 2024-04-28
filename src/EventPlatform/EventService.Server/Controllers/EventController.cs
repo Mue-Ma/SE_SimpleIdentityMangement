@@ -1,5 +1,5 @@
 using EventService.Server.Core.Entities;
-using EventService.Server.Persistence;
+using EventService.Server.Persistence.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

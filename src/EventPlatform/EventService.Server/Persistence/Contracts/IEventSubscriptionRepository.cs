@@ -1,6 +1,6 @@
 ﻿using EventService.Server.Core.Entities;
 
-namespace EventService.Server.Persistence
+namespace EventService.Server.Persistence.Contracts
 {
     public interface IEventSubscriptionRepository
     {
