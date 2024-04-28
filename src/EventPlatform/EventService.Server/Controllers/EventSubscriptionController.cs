@@ -13,6 +13,7 @@ namespace EventService.Server.Controllers
         private readonly IEventSubscriptionRepository _eventSubscriptionRepository = eventSubscriptionRepository;
 
         [HttpGet("[action]/{eMail}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEMail(string eMail)
         {
             var res = await _eventSubscriptionRepository.GetEntityByEMail(eMail);
@@ -23,20 +24,36 @@ namespace EventService.Server.Controllers
         [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEventId(Guid id)
         {
-            var res = await _eventSubscriptionRepository.GetEntityBySubscriptionId(id);
+            var res = await _eventSubscriptionRepository.GetEntityByEventId(id);
             return res != null ? Ok(res) : NotFound();
         }
 
         [HttpGet("[action]/{id}&&{eMail}")]
+        [Authorize(Roles = "admin")]
         public async Task<ActionResult<EventSubscription>> GetByEventIdAndEmail(Guid id, string eMail)
         {
-            var res = (await _eventSubscriptionRepository.GetEntityBySubscriptionId(id)).FirstOrDefault(s => s.EMail.Equals(eMail));
+            var res = (await _eventSubscriptionRepository.GetEntityByEventId(id)).FirstOrDefault(s => s.EMail.Equals(eMail));
+            return res != null ? Ok(res) : NotFound();
+        }
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByIdentity()
+        {
+            var res = await _eventSubscriptionRepository.GetEntityByEMail(User?.Identity?.Name ?? "");
+            return res != null ? Ok(res) : NotFound();
+        }
+
+        [HttpGet("[action]/{id}")]
+        public async Task<ActionResult<EventSubscription>> GetByEventIdAndIdentity(Guid id)
+        {
+            var res = (await _eventSubscriptionRepository.GetEntityByEMail(User?.Identity?.Name ?? "")).FirstOrDefault(s => s.EventId.Equals(id));
             return res != null ? Ok(res) : NotFound();
         }
 
         [HttpPost]
         public async Task<ActionResult<Guid>> Post([FromBody] EventSubscription eventSubscription)
         {
+            eventSubscription.EMail = User?.Identity?.Name ?? "";
             await _eventSubscriptionRepository.Add(eventSubscription);
             return eventSubscription.Id;
         }

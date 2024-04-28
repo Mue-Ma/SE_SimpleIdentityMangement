@@ -8,7 +8,7 @@ namespace EventService.Server.Persistence.Contracts
         Task AddMany(ICollection<EventSubscription> obj);
         Task Delete(Guid id);
         Task<IEnumerable<EventSubscription>> GetAll();
-        Task<IEnumerable<EventSubscription>> GetEntityBySubscriptionId(Guid id);
+        Task<IEnumerable<EventSubscription>> GetEntityByEventId(Guid id);
         Task<EventSubscription?> GetEntityById(Guid id);
         Task Update(EventSubscription obj);
         Task<IEnumerable<EventSubscription>> GetEntityByEMail(string eMail);

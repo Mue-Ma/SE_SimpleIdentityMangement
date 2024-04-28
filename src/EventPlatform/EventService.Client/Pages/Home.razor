@@ -25,14 +25,14 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var eventObject in events)
+        @foreach (var eventObject in _events)
         {
             <tr>
                 <td>@eventObject.Name</td>
                 <td>@eventObject.StartDate</td>
                 <td>@eventObject.EndDate</td>
                 <td>@eventObject.Description</td>
-                <td><button class=@(eventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+                <td><button class=@(_eventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
             </tr>
         }
     </tbody>
@@ -50,13 +50,13 @@
 
 @code {
 
-    private IEnumerable<Event> events = new List<Event>();
-    private List<Guid> eventIdsOfUser = new List<Guid>();
+    private IEnumerable<Event> _events = new List<Event>();
+    private List<Guid> _eventIdsOfUser = new List<Guid>();
 
     protected override async Task OnInitializedAsync()
     {
         var publicHttp = HttpClientFactory.CreateClient("Public");
-        events = await publicHttp.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/api/Event") ?? new List<Event>();
+        _events = await publicHttp.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/api/Event") ?? new List<Event>();
 
         var user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User;
         await LoadSubscriptions(user);
@@ -76,11 +76,11 @@
     { 
         if (user != null && user.Identity!.IsAuthenticated && user.IsInRole("user"))
         {
-            var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByEMail/{user.Identity!.Name}");
+            var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByIdentity");
 
             if (eventSubscriptionOfRegisteredUser != null)
             {
-                eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
+                _eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
             }
         }
     }

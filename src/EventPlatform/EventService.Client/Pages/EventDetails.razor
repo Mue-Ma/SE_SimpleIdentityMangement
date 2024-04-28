@@ -8,34 +8,34 @@
 @inject AuthenticationStateProvider GetAuthenticationStateAsync
 
 <h1>EventDetails</h1>
-<Toasts class="p-3" Messages="messages" Delay=5000 Placement="ToastsPlacement.BottomRight" />
+<Toasts class="p-3" Messages="_messages" Delay=5000 Placement="ToastsPlacement.BottomRight" />
 <AuthorizeView>
     <dl class="row">
 
-        @if (EventToShow != null)
+        @if (_eventToShow != null)
         {
-            <EditForm Model="@EventToShow" Context="editContext" OnValidSubmit="UpdateEvent">
+            <EditForm Model="@_eventToShow" Context="editContext" OnValidSubmit="UpdateEvent">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
                 <div class="form-group">
                     <dt class="col-sm-2">Event Name</dt>
-                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Name" disabled=@IsNotAdmin />
+                    <InputText id="Name" class="form-control" @bind-Value="_eventToShow.Name" disabled=@_isNotAdmin />
                 </div>
 
                 <div class="form-group">
                     <dt class="col-sm-2">Start Date</dt>
-                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.StartDate" disabled=@IsNotAdmin />
+                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="_eventToShow.StartDate" disabled=@_isNotAdmin />
                 </div>
 
                 <div class="form-group">
                     <dt class="col-sm-2">End Date</dt>
-                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="EventToShow.EndDate" disabled=@IsNotAdmin />
+                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="_eventToShow.EndDate" disabled=@_isNotAdmin />
                 </div>
 
                 <div class="form-group">
                     <dt class="col-sm-2">Description</dt>
-                    <InputText id="Name" class="form-control" @bind-Value="EventToShow.Description" disabled=@IsNotAdmin />
+                    <InputText id="Name" class="form-control" @bind-Value="_eventToShow.Description" disabled=@_isNotAdmin />
                 </div>
 
                 <AuthorizeView Roles="admin" Context="adminContext">
@@ -48,16 +48,16 @@
             <AuthorizeView Roles="admin" Context="adminContext">
 
                 <h2>Aktuelle Anmeldungen</h2>
-                <hr/>
+                <hr />
 
                 <div class="form-group">
                     <dt class="col-sm-2">Registrierungen: </dt>
-                    <dd class="col-sm-2">@CountRegistrations</dd>
+                    <dd class="col-sm-2">@_countRegistrations</dd>
                 </div>
 
                 <div class="form-group">
                     <dt class="col-sm-2">Gesamtbesucheranzahl: </dt>
-                    <dd class="col-sm-2">@TotalAmontVisitors</dd>
+                    <dd class="col-sm-2">@_totalAmontVisitors</dd>
                 </div>
                 <div class="form-group">
                     <table class="table">
@@ -69,7 +69,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var subscriptionForAdmin in EventSubscriptionsAdminView)
+                            @foreach (var subscriptionForAdmin in _eventSubscriptionsAdminView)
                             {
                                 <tr>
                                     <td>@subscriptionForAdmin.EMail</td>
@@ -84,14 +84,14 @@
 
             <AuthorizeView Roles="user" Context="innerUserContext">
                 <h2>Registrierung</h2>
-                <hr/>
+                <hr />
 
                 <div class="form-group">
                     <dt class="col-sm-2">Anzahl Begleiter</dt>
-                    <input type="number" id="companions" @bind="Companions" class="form-control" />
+                    <input type="number" id="companions" @bind="_companions" class="form-control" />
                 </div>
                 <div class="form-group">
-                    @if (UserRegisteredForEvent)
+                    @if (_userRegisteredForEvent)
                     {
                         <button class="btn btn-outline-primary" @onclick="DeregisterForEvent">Abmelden</button>
                         <button class="btn btn-outline-primary" @onclick="ChangeCompanions">Begleiteranzahl ändern</button>
@@ -113,44 +113,31 @@
 @code {
     [Parameter]
     public Guid Id { get; set; }
-    public bool IsNotAdmin { get; set; }
-    public bool UserRegisteredForEvent { get; set; }
-    public int CountRegistrations { get; set; }
-    public int TotalAmontVisitors { get; set; }
-    public int Companions { get; set; }
 
-    public EventSubscription? Subscription { get; set; }
-    public ClaimsPrincipal? User { get; set; }
-    public Event? EventToShow { get; set; }
+    private bool _isNotAdmin { get; set; }
+    private bool _userRegisteredForEvent { get; set; }
+    private int _countRegistrations { get; set; }
+    private int _totalAmontVisitors { get; set; }
+    private int _companions { get; set; }
 
-    public IEnumerable<EventSubscription> EventSubscriptionsAdminView = new List<EventSubscription>();
-    List<ToastMessage> messages = new List<ToastMessage>();
+    private EventSubscription? _subscription { get; set; }
+    private ClaimsPrincipal? _user { get; set; }
+    private Event? _eventToShow { get; set; }
+
+    public IEnumerable<EventSubscription> _eventSubscriptionsAdminView = new List<EventSubscription>();
+    List<ToastMessage> _messages = new List<ToastMessage>();
 
     protected override async Task OnInitializedAsync()
     {
 
-        User = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
-
-        IsNotAdmin = !User.IsInRole("admin");
-        EventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/api/Event/{Id}");
-
-        var response = await Http.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User.Identity!.Name}");
-
-        if (response.IsSuccessStatusCode)
-        {
-            Subscription = await response.Content.ReadFromJsonAsync<EventSubscription>();
-            Companions = Subscription!.Companions;
-            UserRegisteredForEvent = true;
-        }
-        else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            UserRegisteredForEvent = false;
-        }
+        _user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
+        _isNotAdmin = !_user.IsInRole("admin");
+        _eventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/api/Event/{Id}");
 
         await FetchSubscriptionInfoForAdmin();
     }
 
-    private void ShowMessage(ToastType toastType, string text) => messages.Add(CreateToastMessage(toastType, text));
+    private void ShowMessage(ToastType toastType, string text) => _messages.Add(CreateToastMessage(toastType, text));
 
     private ToastMessage CreateToastMessage(ToastType toastType, string text)
     => new ToastMessage
@@ -160,11 +147,28 @@
             AutoHide = true
         };
 
+    private async Task FetchSubscriptionsInfos()
+    {
+        var response = await Http.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{Id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            _subscription = await response.Content.ReadFromJsonAsync<EventSubscription>();
+            _companions = _subscription!.Companions;
+            _userRegisteredForEvent = true;
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _userRegisteredForEvent = false;
+        }
+    }
+
     private async Task FetchSubscriptionInfoForAdmin()
-    {   if (IsNotAdmin) return;
-        EventSubscriptionsAdminView = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{Id}") ?? new List<EventSubscription>();
-        CountRegistrations = EventSubscriptionsAdminView.Count();
-        TotalAmontVisitors = EventSubscriptionsAdminView.Sum(x => x.Companions) + CountRegistrations;
+    {
+        if (_isNotAdmin) return;
+        _eventSubscriptionsAdminView = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{Id}") ?? new List<EventSubscription>();
+        _countRegistrations = _eventSubscriptionsAdminView.Count();
+        _totalAmontVisitors = _eventSubscriptionsAdminView.Sum(x => x.Companions) + _countRegistrations;
     }
 
     private async Task RegisterForEvent()
@@ -172,16 +176,16 @@
         EventSubscription subscriptionToPost = new EventSubscription
             {
                 EventId = Id,
-                EMail = User!.Identity!.Name!,
-                Companions = Companions
+                EMail = _user!.Identity!.Name!,
+                Companions = _companions
             };
 
         var res = await Http.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscriptionToPost);
         if (res.IsSuccessStatusCode)
         {
-            Subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndEmail/{Id}&&{User!.Identity.Name}");
-            UserRegisteredForEvent = true;
-            ShowMessage(ToastType.Success, $"Registrierung für {Subscription?.Companions + 1} Personen war erfolgreich");
+            _subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{Id}");
+            _userRegisteredForEvent = true;
+            ShowMessage(ToastType.Success, $"Registrierung für {_subscription?.Companions + 1} Personen war erfolgreich");
         }
         else ShowMessage(ToastType.Danger, $"Etwas is bei der Registrierung schief gegangen.");
 
@@ -190,14 +194,14 @@
 
     private async Task DeregisterForEvent()
     {
-        UserRegisteredForEvent = false;
+        _userRegisteredForEvent = false;
 
-        var res = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{Subscription!.Id}");
+        var res = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{_subscription!.Id}");
 
         if (res.IsSuccessStatusCode)
         {
-            Subscription = null;
-            ShowMessage(ToastType.Success, $"Abmeldung für {Subscription?.Companions + 1} Personen war erfolgreich");
+            _subscription = null;
+            ShowMessage(ToastType.Success, $"Abmeldung für {_subscription?.Companions + 1} Personen war erfolgreich");
         }
         else ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
 
@@ -218,16 +222,16 @@
 
     private async Task ChangeCompanions()
     {
-        Subscription!.Companions = Companions;
-        var res = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", Subscription);
+        _subscription!.Companions = _companions;
+        var res = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", _subscription);
 
-        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung der Beigelieter auf {Subscription?.Companions + 1} Personen war erfolgreich");
+        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung der Beigelieter auf {_subscription?.Companions + 1} Personen war erfolgreich");
         else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
 
     private async Task UpdateEvent()
     {
-        var res = await Http.PutAsJsonAsync($"http://localhost/eventservice/api/Event", EventToShow);
+        var res = await Http.PutAsJsonAsync($"http://localhost/eventservice/api/Event", _eventToShow);
         if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung des Events war erfolgreich");
         else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
