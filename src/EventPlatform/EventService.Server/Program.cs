@@ -86,7 +86,7 @@ IServiceProvider serviceProvider = scope.ServiceProvider;
 var context = serviceProvider.GetRequiredService<IDbContext>();
 var repo = serviceProvider.GetService<IEventRepository>();
 
-await repo!.AddMany(Enumerable.Range(1, 100).Select(index => new Event
+await repo!.AddMany(Enumerable.Range(1, 10).Select(index => new Event
 {
     StartDate = DateTime.Now.AddDays(index),
     EndDate = DateTime.Now.AddDays(index).AddHours(5),
