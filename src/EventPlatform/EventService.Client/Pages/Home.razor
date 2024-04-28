@@ -59,7 +59,7 @@
         events = await publicHttp.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/api/Event") ?? new List<Event>();
 
         var user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User;
-        LoadSubscriptions(user);
+        await LoadSubscriptions(user);
     }
 
     private void NavigateToEventDetails(Guid id)
@@ -72,7 +72,7 @@
         NavigationManager.NavigateTo("CreateEvent");
     }
 
-    private async void LoadSubscriptions(ClaimsPrincipal? user)
+    private async Task LoadSubscriptions(ClaimsPrincipal? user)
     { 
         if (user != null && user.Identity!.IsAuthenticated && user.IsInRole("user"))
         {

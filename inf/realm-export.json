@@ -30,6 +30,24 @@
     "frontendUrl": "http://localhost",
     "acr.loa.map": "[]"
   },
+  "groups": [
+    {
+      "name": "admin-group",
+      "path": "/admin-group",
+      "attributes": {},
+      "realmRoles": [
+        "admin"
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "view-users",
+          "manage-users",
+          "query-users"
+        ]
+      },
+      "subGroups": []
+    }
+  ],
   "defaultRole": {
     "name": "default-roles-EventPlatform",
     "description": "${role_default-roles}",

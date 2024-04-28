@@ -5,22 +5,20 @@
 
 @attribute [AllowAnonymous]
 
-<AuthorizeView>
-    <Authorized>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <button class="btn btn-primary" @onclick="() => OpenProfile()">Show Profile</button>
-                <button class="btn btn-outline-primary" @onclick="BeginSignOut">Log out</button>
-            </div>
-        </div>
-    </Authorized>
-    <NotAuthorized>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <AuthorizeView Roles="admin">
+        <button class="btn btn-outline-primary" @onclick="OpenUserSettings">View Users</button>
+    </AuthorizeView>
+    <AuthorizeView>
+        <Authorized>
+            <button class="btn btn-primary" @onclick="() => OpenProfile()">Show Profile</button>
+            <button class="btn btn-outline-primary" @onclick="BeginSignOut">Log out</button>
+        </Authorized>
+        <NotAuthorized>
             <button class="btn btn-primary" @onclick="BeginSignIn">Log in</button>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
-
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
 @code {
     private void BeginSignOut(MouseEventArgs args)
     {
@@ -35,5 +33,10 @@
     private void OpenProfile()
     {
         Navigation.NavigateTo("http://localhost/realms/EventPlatform/account/#/personal-info", true);
+    }
+
+    private void OpenUserSettings()
+    {
+        Navigation.NavigateTo("http://localhost/admin/EventPlatform/console/#/EventPlatform/users", true);
     }
 }
