@@ -133,7 +133,8 @@
         _user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync()).User;
         _isNotAdmin = !_user.IsInRole("admin");
         _eventToShow = await Http.GetFromJsonAsync<Event>($"http://localhost/eventservice/api/Event/{Id}");
-
+        
+        await FetchSubscriptionsInfos();
         await FetchSubscriptionInfoForAdmin();
     }
 
