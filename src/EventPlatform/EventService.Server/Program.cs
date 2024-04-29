@@ -12,10 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables();
-    
+
 
 // Add services to the container.
-builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfiguration 
+builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfiguration
 {
     ConnectionString = builder.Configuration["ConStr-MongoDB"] ?? throw new Exception("No DB-Connectionstring given!"),
     DatabaseName = "EventServiceDB"
@@ -73,11 +73,18 @@ app.UseCors(x => x
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
+
+app.UseSwagger(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.PreSerializeFilters.Add((swaggerDoc, httpRequest) =>
+    {
+        var basePath = "eventservice";
+        var serverUrl = $"{httpRequest.Scheme}://{httpRequest.Host}/{basePath}";
+        swaggerDoc.Servers = new List<OpenApiServer> { new() { Url = serverUrl } };
+    });
+});
+
+app.UseSwaggerUI();
 
 app.MapControllers();
 

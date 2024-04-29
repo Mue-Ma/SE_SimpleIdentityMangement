@@ -1,4 +1,6 @@
 # SE_UE2_SimpleIdentityMangement
+Bevor die Anwendung gestartet wird muss Docker Desktop gestartet sein.
+Zum starten der Anwendung zu /inf navigieren und dock-init.ps1 in der PowerShell ausführen.
 ## Erstellen Sie ein einfaches Service (Themen siehe unten) mit folgenden Eigenschaften:
 - Einfache Client/Server-Kommunikation
 - Authentifizierung
@@ -15,3 +17,4 @@ und kann einzelne Anmeldungen inspizieren.
 ## Plattform zur Authentifizierung
 - Keycloak: https://www.keycloak.org/
 - Auswahl einer anderen Plattform ist zulässig.
+
