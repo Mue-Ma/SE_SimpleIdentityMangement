@@ -1,11 +1,12 @@
 using EventPlatform.Common.Core.Factories;
-using EventService.Client;
+using EventService.Client.Services;
+using EventService.Client.Services.Contracts;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
-builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<EventService.Client.App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
@@ -32,9 +33,11 @@ var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 builder.Services.AddHttpClient("Public", client => client.BaseAddress = baseAddress);
 builder.Services.AddHttpClient("Default", client => client.BaseAddress = baseAddress)
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Default"));
 
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("Default"));
 builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccount>), typeof(KeyCloakAccountFactory));
+
+builder.Services.AddScoped<IIdentityService, IdentityService>();
 
 builder.Services.AddBlazorBootstrap();
 

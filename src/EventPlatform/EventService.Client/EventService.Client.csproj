@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication"/>
+		<TrimmerRootAssembly Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
 	</ItemGroup>
 
 	<ItemGroup>

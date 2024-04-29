@@ -4,7 +4,6 @@ using EventService.Server.Persistence;
 using EventService.Server.Persistence.Contracts;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Common;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables();
-
 
 // Add services to the container.
 builder.Services.AddScoped<IDbContext>(ctx => new DbContext(new DatabaseConfiguration
