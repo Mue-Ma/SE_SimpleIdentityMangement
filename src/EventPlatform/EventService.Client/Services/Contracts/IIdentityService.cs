@@ -6,5 +6,8 @@ namespace EventService.Client.Services.Contracts
     {
         Task<ClaimsPrincipal> GetClaimsPrincipal();
         Task<string?> GetIdentityName();
+        Task<bool> IsAdmin();
+        Task<bool> IsUser();
+        Task<bool> IsAuthenticated();
     }
 }

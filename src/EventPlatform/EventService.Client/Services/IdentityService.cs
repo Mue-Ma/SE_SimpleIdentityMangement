@@ -14,9 +14,10 @@ namespace EventService.Client.Services
             return authState.User;
         }
 
-        public async Task<string?> GetIdentityName()
-        {
-            return (await GetClaimsPrincipal()).Identity?.Name;
-        }
+        public async Task<string?> GetIdentityName() => (await GetClaimsPrincipal()).Identity?.Name;
+        public async Task<bool> IsAdmin() => (await GetClaimsPrincipal()).IsInRole("admin");
+        public async Task<bool> IsUser() => (await GetClaimsPrincipal()).IsInRole("user");
+        public async Task<bool> IsAuthenticated() => (await GetClaimsPrincipal()).Identity?.IsAuthenticated ?? false;
+        
     }
 }

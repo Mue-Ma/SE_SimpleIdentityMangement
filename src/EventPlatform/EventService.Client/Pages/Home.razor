@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using EventService.Client.Models
 
-@inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider GetAuthenticationStateAsync
 @inject IHttpClientFactory HttpClientFactory
@@ -74,6 +73,7 @@
 
     private async Task LoadSubscriptions(ClaimsPrincipal? user)
     { 
+        var Http = HttpClientFactory.CreateClient("Authorized");
         if (user != null && user.Identity!.IsAuthenticated && user.IsInRole("user"))
         {
             var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByIdentity");

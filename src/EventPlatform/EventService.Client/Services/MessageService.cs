@@ -1,8 +1,9 @@
 ﻿using BlazorBootstrap;
+using EventService.Client.Services.Contracts;
 
 namespace EventService.Client.Services
 {
-    public class MessageService(ToastService toastService)
+    public class MessageService(ToastService toastService) : IMessageService
     {
         private readonly ToastService _toastService = toastService;
 
