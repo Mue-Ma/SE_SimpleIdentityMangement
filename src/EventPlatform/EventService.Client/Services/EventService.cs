@@ -91,9 +91,9 @@ namespace EventService.Client.Services
             else _messageService.ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
         }
 
-        public Task<EventSubscription?> GetSubscriptionByEventIdAndIdentity(Guid subscriptionID)
+        public async Task<EventSubscription?> GetSubscriptionByEventIdAndIdentity(Guid subscriptionID)
         {
-            return _authHttpClient.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{subscriptionID}");
+            return await _authHttpClient.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{subscriptionID}");
         }
 
         public async Task<IEnumerable<EventSubscription>> GetEventSubscriptionsByEventId(Guid id)
