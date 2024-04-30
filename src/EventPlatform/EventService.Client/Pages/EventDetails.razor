@@ -1,5 +1,6 @@
 ﻿@page "/EventDetails/{id:guid}"
 @using System.Security.Claims
+@using EventService.Client.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using EventService.Client.Models
 
@@ -7,8 +8,9 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider GetAuthenticationStateAsync
 
+@inject MessageService _messageSercvice
+
 <h1>EventDetails</h1>
-<Toasts class="p-3" Messages="_messages" Delay=5000 Placement="ToastsPlacement.BottomRight" />
 <AuthorizeView>
     <dl class="row">
 
@@ -125,7 +127,6 @@
     private Event? _eventToShow { get; set; }
 
     public IEnumerable<EventSubscription> _eventSubscriptionsAdminView = new List<EventSubscription>();
-    List<ToastMessage> _messages = new List<ToastMessage>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,16 +138,6 @@
         await FetchSubscriptionsInfos();
         await FetchSubscriptionInfoForAdmin();
     }
-
-    private void ShowMessage(ToastType toastType, string text) => _messages.Add(CreateToastMessage(toastType, text));
-
-    private ToastMessage CreateToastMessage(ToastType toastType, string text)
-    => new ToastMessage
-        {
-            Type = toastType,
-            Message = text,
-            AutoHide = true
-        };
 
     private async Task FetchSubscriptionsInfos()
     {
@@ -186,9 +177,9 @@
         {
             _subscription = await Http.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{Id}");
             _userRegisteredForEvent = true;
-            ShowMessage(ToastType.Success, $"Registrierung für {_subscription?.Companions + 1} Personen war erfolgreich");
+            _messageSercvice.ShowMessage(ToastType.Success, $"Registrierung für {_subscription?.Companions + 1} Personen war erfolgreich");
         }
-        else ShowMessage(ToastType.Danger, $"Etwas is bei der Registrierung schief gegangen.");
+        else _messageSercvice.ShowMessage(ToastType.Danger, $"Etwas is bei der Registrierung schief gegangen.");
 
         StateHasChanged();
     }
@@ -202,9 +193,9 @@
         if (res.IsSuccessStatusCode)
         {
             _subscription = null;
-            ShowMessage(ToastType.Success, $"Abmeldung für {_subscription?.Companions + 1} Personen war erfolgreich");
+            _messageSercvice.ShowMessage(ToastType.Success, $"Abmeldung für {_subscription?.Companions + 1} Personen war erfolgreich");
         }
-        else ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
+        else _messageSercvice.ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
 
 
         StateHasChanged();
@@ -214,8 +205,8 @@
     {
         var res = await Http.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
 
-        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Abmeldung der Registrierung {subscriptionID} war erfolgreich");
-        else ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
+        if (res.IsSuccessStatusCode) _messageSercvice.ShowMessage(ToastType.Success, $"Abmeldung der Registrierung {subscriptionID} war erfolgreich");
+        else _messageSercvice.ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
 
         await FetchSubscriptionInfoForAdmin();
         StateHasChanged();
@@ -226,15 +217,15 @@
         _subscription!.Companions = _companions;
         var res = await Http.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", _subscription);
 
-        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung der Beigelieter auf {_subscription?.Companions + 1} Personen war erfolgreich");
-        else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
+        if (res.IsSuccessStatusCode) _messageSercvice.ShowMessage(ToastType.Success, $"Änderung der Beigelieter auf {_subscription?.Companions + 1} Personen war erfolgreich");
+        else _messageSercvice.ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
 
     private async Task UpdateEvent()
     {
         var res = await Http.PutAsJsonAsync($"http://localhost/eventservice/api/Event", _eventToShow);
-        if (res.IsSuccessStatusCode) ShowMessage(ToastType.Success, $"Änderung des Events war erfolgreich");
-        else ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
+        if (res.IsSuccessStatusCode) _messageSercvice.ShowMessage(ToastType.Success, $"Änderung des Events war erfolgreich");
+        else _messageSercvice.ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
     }
 
     private async Task DeleteEvent()

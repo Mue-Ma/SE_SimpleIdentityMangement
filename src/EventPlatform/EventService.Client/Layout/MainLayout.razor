@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+﻿@using EventService.Client.Services
+@inherits LayoutComponentBase
+
+@inject MessageService _messageService
 
 <div class="page">
     <div class="sidebar">
@@ -13,3 +16,5 @@
         </article>
     </main>
 </div>
+
+<Toasts class="p-3" Delay=5000 Placement="ToastsPlacement.BottomRight" />

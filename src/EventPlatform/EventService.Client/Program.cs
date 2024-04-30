@@ -39,6 +39,8 @@ builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccoun
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 
+builder.Services.AddScoped<MessageService>();
+
 builder.Services.AddBlazorBootstrap();
 
 await builder.Build().RunAsync();
