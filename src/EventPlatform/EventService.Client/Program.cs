@@ -9,8 +9,6 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<EventService.Client.App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
 builder.Services.AddOidcAuthentication(options =>
 {
 #if DEBUG
@@ -28,8 +26,9 @@ builder.Services.AddOidcAuthentication(options =>
     options.UserOptions.ScopeClaim = "scope";
 });
 
-var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+builder.Services.AddBlazorBootstrap();
 
+var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 builder.Services.AddHttpClient("Public", client => client.BaseAddress = baseAddress);
 builder.Services.AddHttpClient("Authorized", client => client.BaseAddress = baseAddress)
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
@@ -39,7 +38,5 @@ builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccoun
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddTransient<IEventService, EventService.Client.Services.EventService>();
-
-builder.Services.AddBlazorBootstrap();
 
 await builder.Build().RunAsync();

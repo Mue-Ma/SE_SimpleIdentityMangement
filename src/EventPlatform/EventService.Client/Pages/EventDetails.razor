@@ -6,7 +6,6 @@
 @using EventService.Client.Models
 
 @inject NavigationManager NavigationManager
-@inject IMessageService MessageSercvice
 @inject IIdentityService IdentityService
 @inject IEventService EventService
 
@@ -94,14 +93,15 @@
                     <input type="number" id="companions" @bind="_currentUserSubscription.Companions" class="form-control" />
                 </div>
                 <div class="form-group">
-                    @if (string.IsNullOrEmpty(_currentUserSubscription.EMail))
+                    @if (!string.IsNullOrEmpty(_currentUserSubscription.EMail))
                     {
-                        <button class="btn btn-outline-primary" @onclick="() => EventService.DeleteSubscription(_currentUserSubscription.Id)">Abmelden</button>
+                        <button class="btn btn-outline-primary" @onclick="Deregister"> Abmelden
+                        </button>
                         <button class="btn btn-outline-primary" @onclick="() => EventService.UpdateSubscription(_currentUserSubscription)">Begleiteranzahl ändern</button>
                     }
                     else
                     {
-                        <button class="btn btn-primary" @onclick="() => EventService.RegisterForEvent(_currentUserSubscription)">Anmelden</button>
+                        <button class="btn btn-primary" @onclick="Register">Anmelden</button>
                     }
                 </div>
             </AuthorizeView>
@@ -119,27 +119,38 @@
 
     private bool _isNotAdmin { get; set; }
 
-    private EventSubscription _currentUserSubscription { get; set; } = new ();
-    private Event _eventToShow { get; set; } = new ();
+    private EventSubscription _currentUserSubscription { get; set; } = new();
+    private Event _eventToShow { get; set; } = new();
     public EventSubscriptionOverview _eventSubscriptionOverview = new EventSubscriptionOverview([]);
 
     protected override async Task OnInitializedAsync()
     {
         _isNotAdmin = !(await IdentityService.IsAdmin());
         _eventToShow = await EventService.GetEventById(Id);
-        _currentUserSubscription = await EventService.GetSubscriptionByEventIdAndIdentity(Id) ?? new EventSubscription();
+        _currentUserSubscription = await EventService.GetSubscriptionByEventIdAndIdentity(Id) ?? new EventSubscription() { EventId = Id };
         await FetchSubscriptionInfoForAdmin();
     }
 
     private async Task FetchSubscriptionInfoForAdmin()
     {
         if (_isNotAdmin) return;
-        _eventSubscriptionOverview = new EventSubscriptionOverview(await EventService.GetEventSubscriptionsByEventId(Id));
+        _eventSubscriptionOverview = new EventSubscriptionOverview(await EventService.GetSubscriptionsByEventId(Id));
     }
 
     private async Task DeleteEvent()
     {
         await EventService.DeleteEvent(_eventToShow.Id);
         NavigationManager.NavigateTo("/");
+    }
+
+    private async Task Register()
+    {
+        _currentUserSubscription = (await EventService.RegisterForEvent(_currentUserSubscription))!;
+    }
+
+    private async Task Deregister()
+    {
+        await EventService.DeleteSubscription(_currentUserSubscription.Id);
+        _currentUserSubscription = new EventSubscription() { EventId = Id };
     }
 }

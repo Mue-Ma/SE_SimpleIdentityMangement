@@ -1,11 +1,12 @@
 ﻿@page "/"
+
 @using System.Security.Claims
+@using EventService.Client.Services.Contracts
 @using Microsoft.AspNetCore.Components.Authorization
 @using EventService.Client.Models
 
 @inject NavigationManager NavigationManager
-@inject AuthenticationStateProvider GetAuthenticationStateAsync
-@inject IHttpClientFactory HttpClientFactory
+@inject IEventService EventService
 
 @attribute [AllowAnonymous]
 
@@ -54,11 +55,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var publicHttp = HttpClientFactory.CreateClient("Public");
-        _events = await publicHttp.GetFromJsonAsync<IEnumerable<Event>>(@"http://localhost/eventservice/api/Event") ?? new List<Event>();
-
-        var user = (await GetAuthenticationStateAsync.GetAuthenticationStateAsync())?.User;
-        await LoadSubscriptions(user);
+        _events = await EventService.GetEvents();
+        _eventIdsOfUser = (await EventService.GetSubscriptionsByIdentity()).Select(x => x.EventId).ToList();
     }
 
     private void NavigateToEventDetails(Guid id)
@@ -69,19 +67,5 @@
     private void NavigateToCreateEvent()
     {
         NavigationManager.NavigateTo("CreateEvent");
-    }
-
-    private async Task LoadSubscriptions(ClaimsPrincipal? user)
-    { 
-        var Http = HttpClientFactory.CreateClient("Authorized");
-        if (user != null && user.Identity!.IsAuthenticated && user.IsInRole("user"))
-        {
-            var eventSubscriptionOfRegisteredUser = await Http.GetFromJsonAsync<IEnumerable<EventSubscription>>($"http://localhost/eventservice/api/EventSubscription/GetByIdentity");
-
-            if (eventSubscriptionOfRegisteredUser != null)
-            {
-                _eventIdsOfUser = eventSubscriptionOfRegisteredUser.Select(x => x.EventId).ToList();
-            }
-        }
     }
 }
