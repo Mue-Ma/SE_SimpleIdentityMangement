@@ -17,11 +17,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Description</th>
-            <th></th>
+            <EventFilter OnEventsChanged="HandleEventsChanged"></EventFilter>
         </tr>
     </thead>
     <tbody>
@@ -67,5 +63,10 @@
     private void NavigateToCreateEvent()
     {
         NavigationManager.NavigateTo("CreateEvent");
+    }
+
+    private void HandleEventsChanged(IEnumerable<Event> FilteredEvents)
+    {
+        _events = FilteredEvents;
     }
 }

@@ -1,0 +1,92 @@
+﻿@using EventService.Client.Models
+@using EventService.Client.Services.Contracts
+@inject IEventService EventService
+
+@* Alle Inputs in einer Komponente, nur einmal in Home aufrufen  *@
+<th>
+    Name
+    <input type="text" @bind="NameFilterText" @bind:after="ApplyNameFilter" placeholder="Filter..." />
+</th>
+<th>
+    Start Date
+    <input type="date" @bind="StartDateFilter" @bind:after="ApplyStartDateFilter" placeholder="Filter..." />
+</th>
+<th>
+    End Date
+    <input type="date" @bind="EndDateFilter" @bind:after="ApplyEndDateFilter" placeholder="Filter..." />
+</th>
+<th>
+    Description
+    <input type="text" @bind="DescriptionFilterText" @bind:after="ApplyDescriptionFilter" placeholder="Filter..." />
+</th>
+<th></th>
+
+@* Nur ein Filter Input, FilterType zur Unterscheidung welcher Input Type und was in ApplyFilter Methode gemacht werden muss  *@
+@if (FilterType == "Name" || FilterType == "Description")
+{
+    <input type="text" @bind="NameFilterText" @bind:after="ApplyNameFilter" placeholder="Filter..." />
+}
+else
+{
+    <input type="date" @bind="StartDateFilter" @bind:after="ApplyStartDateFilter" placeholder="Filter..." />
+}
+
+
+@code {
+    [Parameter]
+    public EventCallback<List<Event>> OnEventsChanged { get; set; }
+
+    public string? NameFilterText { get; set; }
+    public string? DescriptionFilterText { get; set; }
+    public DateTime StartDateFilter { get; set; }
+    public DateTime EndDateFilter { get; set; }
+
+    public IEnumerable<Event> FilteredEvents { get; set; }
+
+    [Parameter]
+    public string FilterType { get; set; }
+    private async Task ApplyFilter()
+    {
+        switch (FilterType)
+        {
+            case "Name":
+                //Name Filter Logik
+                break;
+            case "Description":
+                //Description Filter Logik
+                break;
+            case "StartDate":
+                //Start Date Filter Logik
+                break;
+            case "EndDate":
+                //End Date Filter Logik
+                break;
+        }
+    }
+
+
+
+    private async Task ApplyNameFilter()
+    {
+
+    }
+
+    private async Task ApplyDescriptionFilter()
+    {
+        if (!string.IsNullOrEmpty(NameFilterText))
+        {
+            FilteredEvents = await EventService.GetEventByDescription(NameFilterText);
+            await OnEventsChanged.InvokeAsync(FilteredEvents.ToList());
+        }
+    }
+
+    private async Task ApplyStartDateFilter()
+    {
+
+    }
+
+    private async Task ApplyEndDateFilter()
+    {
+
+    }
+}

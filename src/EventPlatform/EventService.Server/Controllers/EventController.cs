@@ -31,11 +31,11 @@ namespace EventService.Server.Controllers
         public async Task<ActionResult<Guid>> Post([FromBody] Event ev)
         {
             if (await _eventRepository.GetByName(ev.Name) != null) BadRequest("Eventname existiert bereits!");
-            try 
+            try
             {
                 await _eventRepository.Add(ev);
             }
-            catch (Exception) 
+            catch (Exception)
             {
                 if((await _eventRepository.GetEntityById(ev.Id)) != null) await _eventRepository.Delete(ev.Id);
                 return Problem();
@@ -58,6 +58,13 @@ namespace EventService.Server.Controllers
         {
             await _eventRepository.Delete(id);
             return NoContent();
+        }
+
+        [HttpGet("GetByDescription/{description}")]
+        public async Task<ActionResult<IEnumerable<Event>>> GetByDescription(string description)
+        {
+            var res = await _eventRepository.GetEntityByDescription(description);
+            return res != null ? Ok(res) : NotFound();
         }
     }
 }

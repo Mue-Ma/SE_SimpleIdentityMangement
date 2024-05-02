@@ -11,5 +11,6 @@ namespace EventService.Server.Persistence.Contracts
         Task<Event?> GetEntityById(Guid id);
         Task Update(Event obj);
         Task<Event?> GetByName(string name);
+        Task<IEnumerable<Event>> GetEntityByDescription(string description);
     }
 }

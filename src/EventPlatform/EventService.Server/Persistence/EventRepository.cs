@@ -36,6 +36,11 @@ namespace EventService.Server.Persistence
             return await EntityDbSet.Find(Builders<Event>.Filter.Eq(x => x.Id, id)).SingleOrDefaultAsync();
         }
 
+        public async Task<IEnumerable<Event>> GetEntityByDescription(string description)
+        {
+            return await EntityDbSet.Find(Builders<Event>.Filter.Eq(x => x.Description, description)).ToListAsync();
+        }
+
         public async Task<Event?> GetByName(string name)
         {
             return await EntityDbSet.Find(Builders<Event>.Filter.Eq(x => x.Name, name)).SingleOrDefaultAsync();
