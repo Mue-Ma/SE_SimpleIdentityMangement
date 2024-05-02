@@ -27,9 +27,27 @@
     "oauth2DeviceCodeLifespan": "600",
     "parRequestUriLifespan": "60",
     "clientSessionMaxLifespan": "0",
-    "frontendUrl": "http://localhost:8080",
+    "frontendUrl": "http://localhost",
     "acr.loa.map": "[]"
   },
+  "groups": [
+    {
+      "name": "admin-group",
+      "path": "/admin-group",
+      "attributes": {},
+      "realmRoles": [
+        "admin"
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "view-users",
+          "manage-users",
+          "query-users"
+        ]
+      },
+      "subGroups": []
+    }
+  ],
   "defaultRole": {
     "name": "default-roles-EventPlatform",
     "description": "${role_default-roles}",
@@ -84,7 +102,7 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "https://localhost:5202/swagger/*",
+        "https://localhost/doc/swagger/*",
         "http://localhost:5154/*"
       ],
       "webOrigins": [

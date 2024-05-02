@@ -71,7 +71,6 @@ app.UseCors(x => x
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.UseSwagger(c =>
 {
     c.PreSerializeFilters.Add((swaggerDoc, httpRequest) =>

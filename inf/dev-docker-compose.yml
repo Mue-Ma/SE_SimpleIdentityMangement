@@ -6,6 +6,8 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      PROXY_ADDRESS_FORWARDING: "true"
+      KC_PROXY: "edge"
     command: 
       - start-dev 
       - --import-realm
