@@ -1,0 +1,45 @@
+﻿@using EventService.Client.Models
+@using EventService.Client.Services.Contracts
+@inherits ComponentBase
+
+@inject NavigationManager NavigationManager
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var eventObject in EventList)
+        {
+            <tr>
+                <td>@eventObject.Name</td>
+                <td>@eventObject.StartDate</td>
+                <td>@eventObject.EndDate</td>
+                <td>@eventObject.Description</td>
+                <td><button class=@(EventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public IEnumerable<Event> EventList { get; set; }
+
+    [Parameter]
+    public List<Guid> EventIdsOfUser { get; set; }
+
+    [CascadingParameter]
+    public CustomErrorHandlingComponent? Error { get; set; }
+
+    private void NavigateToEventDetails(Guid id)
+    {
+        NavigationManager.NavigateTo($"/EventDetails/{id}");
+    }
+}

@@ -14,25 +14,8 @@
 
 <h1>EventOverview</h1>
 
-<table class="table">
-    <thead>
-        <tr>
-            <EventFilter OnEventsChanged="HandleEventsChanged"></EventFilter>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var eventObject in _events)
-        {
-            <tr>
-                <td>@eventObject.Name</td>
-                <td>@eventObject.StartDate</td>
-                <td>@eventObject.EndDate</td>
-                <td>@eventObject.Description</td>
-                <td><button class=@(_eventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
-            </tr>
-        }
-    </tbody>
-</table>
+<EventTableComponent EventList="_events" EventIdsOfUser="_eventIdsOfUser"></EventTableComponent>
+
 
 <AuthorizeView Roles="admin">
     <Authorized>
@@ -53,11 +36,6 @@
     {
         _events = await EventService.GetEvents();
         _eventIdsOfUser = (await EventService.GetSubscriptionsByIdentity()).Select(x => x.EventId).ToList();
-    }
-
-    private void NavigateToEventDetails(Guid id)
-    {
-        NavigationManager.NavigateTo($"EventDetails/{id}");
     }
 
     private void NavigateToCreateEvent()
