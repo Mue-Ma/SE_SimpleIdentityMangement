@@ -19,7 +19,7 @@
                 <td>@eventObject.StartDate</td>
                 <td>@eventObject.EndDate</td>
                 <td>@eventObject.Description</td>
-                <td><button class=@(_eventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+                <td><EventDetailButton EventId="eventObject.Id"></EventDetailButton></td>
             </tr>
         }
     </tbody>
@@ -28,17 +28,4 @@
 @code {
     [CascadingParameter(Name = "Events")]
     public IEnumerable<Event> Events { get; set; } = [];
-
-    private List<Guid> _eventIdsOfUser = new List<Guid>();
-
-    protected override async Task OnInitializedAsync()
-    {
-        _eventIdsOfUser = (await EventService.GetSubscriptionsByIdentity()).Select(x => x.EventId).ToList();
-    }
-
-    private void NavigateToEventDetails(Guid id)
-    {
-        NavigationManager.NavigateTo($"EventDetails/{id}");
-    }
-
 }

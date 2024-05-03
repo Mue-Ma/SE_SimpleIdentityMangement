@@ -1,0 +1,22 @@
+﻿@inject NavigationManager NavigationManager
+@inject IEventService EventService
+
+<button class=@(_eventIdsOfUser.Contains(EventId) ? "btn btn-primary" : "btn btn-outline-primary") 
+@onclick="() => NavigateToEventDetails(EventId)">
+Details
+</button>
+
+@code {
+    [Parameter]
+    public Guid EventId { get; set; }
+    private List<Guid> _eventIdsOfUser = new List<Guid>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _eventIdsOfUser = (await EventService.GetSubscriptionsByIdentity()).Select(x => x.EventId).ToList();
+    }
+    private void NavigateToEventDetails(Guid id)
+    {
+        NavigationManager.NavigateTo($"EventDetails/{id}");
+    }
+}
