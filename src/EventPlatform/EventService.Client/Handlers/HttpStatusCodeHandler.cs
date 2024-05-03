@@ -1,23 +1,27 @@
-﻿
-using BlazorBootstrap;
+﻿using BlazorBootstrap;
 using EventService.Client.Services.Contracts;
 using System.Net;
+using Toolbelt.Blazor;
 
 namespace EventService.Client.Handlers
 {
-    public class HttpStatusCodeHandler(IMessageService messageService) : DelegatingHandler
+    public class HttpStatusCodeHandler(IMessageService messageService, HttpClientInterceptor httpClientInterceptor)
     {
         private readonly IMessageService _messageService = messageService;
+        private readonly HttpClientInterceptor _interceptor = httpClientInterceptor;
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        public void RegisterEvent() => _interceptor.AfterSend += InterceptResponse!;
+
+        private void InterceptResponse(object sender, HttpClientInterceptorEventArgs e)
         {
-            var response = await base.SendAsync(request, cancellationToken);
+            var response = e.Response;
 
             switch (response.StatusCode)
             {
                 case HttpStatusCode.OK:
                     _messageService.ShowMessage(ToastType.Success, "Ok");
                     break;
+
                 case HttpStatusCode.Created:
                     _messageService.ShowMessage(ToastType.Success, "Event created");
                     break;
@@ -45,8 +49,7 @@ namespace EventService.Client.Handlers
                 default:
                     break;
             }
-
-            return response;
         }
+        public void DisposeEvent() => _interceptor.AfterSend -= InterceptResponse!;
     }
 }

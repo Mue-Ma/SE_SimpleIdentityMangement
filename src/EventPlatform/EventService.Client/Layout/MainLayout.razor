@@ -1,7 +1,10 @@
-﻿@using EventService.Client.Services.Contracts
+﻿@using EventService.Client.Handlers
+@using EventService.Client.Services.Contracts
+
 @inherits LayoutComponentBase
 
 @inject IMessageService _messageService
+@inject HttpStatusCodeHandler _inteceptor
 
 <div class="page">
     <div class="sidebar">
@@ -23,3 +26,13 @@
 </div>
 
 <Toasts class="p-3" Delay=5000 Placement="ToastsPlacement.BottomRight" />
+
+@code {
+    protected async override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _inteceptor.RegisterEvent();
+    }
+
+    public void Dispose() => _inteceptor.DisposeEvent();
+}
