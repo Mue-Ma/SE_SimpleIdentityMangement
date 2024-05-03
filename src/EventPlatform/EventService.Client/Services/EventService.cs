@@ -29,9 +29,10 @@ namespace EventService.Client.Services
                 ?? throw new Exception("Event not found");
         }
 
-        public async Task<IEnumerable<Event>> GetEventByDescription(string description)
+        public async Task<IEnumerable<Event>> GetEventByFilter(string filter)
         {
-            return await _authHttpClient.GetFromJsonAsync<IEnumerable<Event>>($"http://localhost/eventservice/api/Event/GetByDescription/{description}");
+            var evs = await GetEvents();
+            return evs.Where(e => e.Name.StartsWith(filter));
         }
 
         public async Task CreateEvent(Event ev)

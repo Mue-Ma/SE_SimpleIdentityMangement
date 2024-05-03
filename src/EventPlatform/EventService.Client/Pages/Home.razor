@@ -1,9 +1,7 @@
 ﻿@page "/"
 
 @using System.Security.Claims
-@using EventService.Client.Services.Contracts
 @using Microsoft.AspNetCore.Components.Authorization
-@using EventService.Client.Models
 
 @inject NavigationManager NavigationManager
 @inject IEventService EventService
@@ -13,26 +11,11 @@
 <PageTitle>EventService</PageTitle>
 
 <h1>EventOverview</h1>
+<CascadingValue Value="@_events" Name="Events">
+    <EventFilter EventsChanged="FilterHandler"></EventFilter>
+    <EventTable></EventTable>
+</CascadingValue>
 
-<table class="table">
-    <thead>
-        <tr>
-            <EventFilter OnEventsChanged="HandleEventsChanged"></EventFilter>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var eventObject in _events)
-        {
-            <tr>
-                <td>@eventObject.Name</td>
-                <td>@eventObject.StartDate</td>
-                <td>@eventObject.EndDate</td>
-                <td>@eventObject.Description</td>
-                <td><button class=@(_eventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
-            </tr>
-        }
-    </tbody>
-</table>
 
 <AuthorizeView Roles="admin">
     <Authorized>
@@ -47,17 +30,10 @@
 @code {
 
     private IEnumerable<Event> _events = new List<Event>();
-    private List<Guid> _eventIdsOfUser = new List<Guid>();
 
     protected override async Task OnInitializedAsync()
     {
         _events = await EventService.GetEvents();
-        _eventIdsOfUser = (await EventService.GetSubscriptionsByIdentity()).Select(x => x.EventId).ToList();
-    }
-
-    private void NavigateToEventDetails(Guid id)
-    {
-        NavigationManager.NavigateTo($"EventDetails/{id}");
     }
 
     private void NavigateToCreateEvent()
@@ -65,8 +41,8 @@
         NavigationManager.NavigateTo("CreateEvent");
     }
 
-    private void HandleEventsChanged(IEnumerable<Event> FilteredEvents)
+    private void FilterHandler(IEnumerable<Event> events)
     {
-        _events = FilteredEvents;
+        _events = events;
     }
 }

@@ -1,0 +1,44 @@
+﻿@inject NavigationManager NavigationManager
+@inject IEventService EventService
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>StartDate</th>
+            <th>EndDate</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var eventObject in Events)
+        {
+            <tr>
+                <td>@eventObject.Name</td>
+                <td>@eventObject.StartDate</td>
+                <td>@eventObject.EndDate</td>
+                <td>@eventObject.Description</td>
+                <td><button class=@(_eventIdsOfUser.Contains(eventObject.Id) ? "btn btn-primary" : "btn btn-outline-primary") @onclick="() => NavigateToEventDetails(eventObject.Id)">Details</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [CascadingParameter(Name = "Events")]
+    public IEnumerable<Event> Events { get; set; } = [];
+
+    private List<Guid> _eventIdsOfUser = new List<Guid>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _eventIdsOfUser = (await EventService.GetSubscriptionsByIdentity()).Select(x => x.EventId).ToList();
+    }
+
+    private void NavigateToEventDetails(Guid id)
+    {
+        NavigationManager.NavigateTo($"EventDetails/{id}");
+    }
+
+}
