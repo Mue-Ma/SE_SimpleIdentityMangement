@@ -19,13 +19,13 @@ namespace EventService.Client.Services
 
         public async Task<IEnumerable<Event>> GetEvents()
         {
-            return await _publicHttpClient.GetFromJsonAsync<IEnumerable<Event>>($"http://localhost/eventservice/api/Event") 
+            return await _publicHttpClient.GetFromJsonAsync<IEnumerable<Event>>($"api/Event")
                 ?? throw new Exception("Event not found");
         }
 
         public async Task<Event> GetEventById(Guid id)
         {
-            return await _authHttpClient.GetFromJsonAsync<Event>($"http://localhost/eventservice/api/Event/{id}") 
+            return await _authHttpClient.GetFromJsonAsync<Event>($"api/Event/{id}")
                 ?? throw new Exception("Event not found");
         }
 
@@ -33,18 +33,19 @@ namespace EventService.Client.Services
         {
             var evs = await GetEvents();
 
-            if(!string.IsNullOrEmpty(filter)) evs = evs.Where(e => e.Name.StartsWith(filter, StringComparison.CurrentCultureIgnoreCase));
+            if (!string.IsNullOrEmpty(filter)) evs = evs.Where(e => e.Name.StartsWith(filter, StringComparison.CurrentCultureIgnoreCase));
 
             return evs;
         }
 
         public async Task CreateEvent(Event ev)
         {
-            await _publicHttpClient.PostAsJsonAsync("http://localhost/eventservice/api/Event", ev);
+            await _authHttpClient.PostAsJsonAsync("api/Event", ev);
         }
+
         public async Task UpdateEvent(Event ev)
         {
-            var res = await _authHttpClient.PutAsJsonAsync($"http://localhost/eventservice/api/Event", ev);
+            var res = await _authHttpClient.PutAsJsonAsync($"api/Event", ev);
             if (res.IsSuccessStatusCode) _messageService.ShowMessage(ToastType.Success, $"Änderung des Events war erfolgreich");
             else _messageService.ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");
         }
@@ -52,7 +53,7 @@ namespace EventService.Client.Services
         public async Task DeleteEvent(Guid id)
         {
 
-            var deleteResponse = await _authHttpClient.DeleteAsync($"http://localhost/eventservice/api/Event/{id}");
+            var deleteResponse = await _authHttpClient.DeleteAsync($"api/Event/{id}");
             if (!deleteResponse.IsSuccessStatusCode)
             {
                 string errorMessage = $"Error: {deleteResponse.StatusCode}";
@@ -62,47 +63,33 @@ namespace EventService.Client.Services
 
         public async Task<EventSubscription?> GetSubscriptionByEventIdAndIdentity(Guid subscriptionID)
         {
-            try
-            {
-                var res = await _authHttpClient.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{subscriptionID}");
-                if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<EventSubscription>();
-                return null;
-            }
-            catch (Exception e)
-            {
-                return null;
-            }
+            var res = await _authHttpClient.GetAsync($"api/EventSubscription/GetByEventIdAndIdentity/{subscriptionID}");
+            if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<EventSubscription>();
+            return null;
         }
 
         public async Task<IEnumerable<EventSubscription>> GetSubscriptionsByEventId(Guid id)
         {
-            return (await _authHttpClient.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"http://localhost/eventservice/api/EventSubscription/GetByEventId/{id}"))
+            return (await _authHttpClient.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"api/EventSubscription/GetByEventId/{id}"))
                 ?? new List<EventSubscription>();
         }
 
         public async Task<IEnumerable<EventSubscription>> GetSubscriptionsByIdentity()
         {
-            try
-            {
-                if (!await _identityService.IsUser()) return new List<EventSubscription>();
-                var res = await _authHttpClient.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByIdentity");
-                if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<IEnumerable<EventSubscription>>() ?? [];
-                return [];
-            }
-            catch (Exception e)
-            {
-                return new List<EventSubscription>();
-            }
+            if (!await _identityService.IsUser()) return new List<EventSubscription>();
+            var res = await _authHttpClient.GetAsync($"api/EventSubscription/GetByIdentity");
+            if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<IEnumerable<EventSubscription>>() ?? [];
+            return [];
         }
 
         public async Task<EventSubscription?> RegisterForEvent(EventSubscription subscription)
         {
             subscription.EMail = await _identityService.GetIdentityName() ?? throw new Exception("Identity name is null");
-            var res = await _authHttpClient.PostAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscription);
+            var res = await _authHttpClient.PostAsJsonAsync("api/EventSubscription", subscription);
 
             if (res.IsSuccessStatusCode)
             {
-                subscription = await _authHttpClient.GetFromJsonAsync<EventSubscription>($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{subscription.EventId}")
+                subscription = await _authHttpClient.GetFromJsonAsync<EventSubscription>($"api/EventSubscription/GetByEventIdAndIdentity/{subscription.EventId}")
                     ?? throw new Exception("Added subscription not found");
                 _messageService.ShowMessage(ToastType.Success, $"Registrierung für {subscription?.Companions + 1} Personen war erfolgreich");
             }
@@ -117,7 +104,7 @@ namespace EventService.Client.Services
 
         public async Task DeleteSubscription(Guid subscriptionID)
         {
-            var res = await _authHttpClient.DeleteAsync($"http://localhost/eventservice/api/EventSubscription/{subscriptionID}");
+            var res = await _authHttpClient.DeleteAsync($"api/EventSubscription/{subscriptionID}");
 
             if (res.IsSuccessStatusCode) _messageService.ShowMessage(ToastType.Success, $"Abmeldung der Registrierung {subscriptionID} war erfolgreich");
             else _messageService.ShowMessage(ToastType.Danger, $"Etwas is bei der Abmeldung schief gegangen.");
@@ -125,7 +112,7 @@ namespace EventService.Client.Services
 
         public async Task UpdateSubscription(EventSubscription subscription)
         {
-            var res = await _authHttpClient.PutAsJsonAsync("http://localhost/eventservice/api/EventSubscription", subscription);
+            var res = await _authHttpClient.PutAsJsonAsync("api/EventSubscription", subscription);
 
             if (res.IsSuccessStatusCode) _messageService.ShowMessage(ToastType.Success, $"Änderung der Beigelieter auf {subscription?.Companions + 1} Personen war erfolgreich");
             else _messageService.ShowMessage(ToastType.Danger, $"Etwas is bei der Änderung schief gegangen.");

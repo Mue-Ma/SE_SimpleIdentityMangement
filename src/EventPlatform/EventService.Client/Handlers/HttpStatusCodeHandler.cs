@@ -5,14 +5,9 @@ using System.Net;
 
 namespace EventService.Client.Handlers
 {
-    public class HttpStatusCodeHandler : DelegatingHandler
+    public class HttpStatusCodeHandler(IMessageService messageService) : DelegatingHandler
     {
-        IMessageService _messageService;
-
-        public HttpStatusCodeHandler(IMessageService messageService)
-        {
-            this._messageService = messageService;
-        }
+        private readonly IMessageService _messageService = messageService;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -20,6 +15,9 @@ namespace EventService.Client.Handlers
 
             switch (response.StatusCode)
             {
+                case HttpStatusCode.OK:
+                    _messageService.ShowMessage(ToastType.Success, "Ok");
+                    break;
                 case HttpStatusCode.Created:
                     _messageService.ShowMessage(ToastType.Success, "Event created");
                     break;

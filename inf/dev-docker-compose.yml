@@ -44,18 +44,12 @@ services:
   eventservice.server:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: https://+:443;http://+:80
-      ASPNETCORE_Kestrel__Certificates__Default__Password: password
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/aspnetapp.pfx
+      ASPNETCORE_URLS: http://+:80
       ConStr-MongoDB: mongodb://root:example@mongo-db:27017/
-    volumes:
-      - ~/.aspnet/https:/https:ro
     expose:
       - "80"
-      - "443"
     ports:
-      - "5102:80"
-      - "5202:443"
+      - 100:80
     build:
       context: .\..\src\EventPlatform
       dockerfile: EventService.Server/Dockerfile

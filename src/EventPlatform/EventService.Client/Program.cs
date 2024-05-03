@@ -5,7 +5,6 @@ using EventService.Client.Services.Contracts;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using System.Net;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<EventService.Client.App>("#app");
@@ -26,16 +25,27 @@ builder.Services.AddOidcAuthentication(options =>
 
 builder.Services.AddBlazorBootstrap();
 
-var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-builder.Services.AddHttpClient("Public", client => client.BaseAddress = baseAddress).AddHttpMessageHandler<HttpStatusCodeHandler>();
-builder.Services.AddHttpClient("Authorized", client => client.BaseAddress = baseAddress)
-    .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>().AddHttpMessageHandler<HttpStatusCodeHandler>();
+
+
+if (builder.HostEnvironment.IsDevelopment())
+{
+    var baseAddress = new Uri("http://localhost:100");
+    builder.Services.AddHttpClient("Authorized", client => client.BaseAddress = baseAddress).AddHttpMessageHandler<HttpStatusCodeHandler>();
+    builder.Services.AddHttpClient("Public", client => client.BaseAddress = baseAddress).AddHttpMessageHandler<HttpStatusCodeHandler>();
+}
+else
+{
+    var baseAddress = new Uri($"http://localhost/eventservice/");
+    builder.Services.AddHttpClient("Public", client => client.BaseAddress = baseAddress).AddHttpMessageHandler<HttpStatusCodeHandler>();
+    builder.Services.AddHttpClient("Authorized", client => client.BaseAddress = baseAddress)
+        .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>().AddHttpMessageHandler<HttpStatusCodeHandler>();
+}
 
 builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccount>), typeof(KeyCloakAccountFactory));
 
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddTransient<IEventService, EventService.Client.Services.EventService>();
-builder.Services.AddTransient<HttpStatusCodeHandler>();
+builder.Services.AddScoped<HttpStatusCodeHandler>();
 
 await builder.Build().RunAsync();

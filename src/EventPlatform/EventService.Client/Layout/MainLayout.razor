@@ -10,7 +10,7 @@
 
     <main>
         <article class="content px-4">
-            <ErrorBoundary @ref="errorBoundary">
+            <ErrorBoundary>
                 <ChildContent>
                     @Body
                 </ChildContent>
@@ -23,12 +23,3 @@
 </div>
 
 <Toasts class="p-3" Delay=5000 Placement="ToastsPlacement.BottomRight" />
-
-@code {
-    private ErrorBoundary? errorBoundary;
-
-    protected override void OnParametersSet()
-    {
-        errorBoundary?.Recover();
-    }
-}

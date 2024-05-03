@@ -19,7 +19,7 @@
                 <td>@eventObject.StartDate</td>
                 <td>@eventObject.EndDate</td>
                 <td>@eventObject.Description</td>
-                <td><EventDetailButton EventId="eventObject.Id"></EventDetailButton></td>
+                <td><EventDetailButton EventId="eventObject.Id" EventIdsOfUser="_userEventIds"></EventDetailButton></td>
             </tr>
         }
     </tbody>
@@ -27,6 +27,7 @@
 
 @code {
     private IEnumerable<Event> _events = [];
+    private List<Guid> _userEventIds =[];
 
     [CascadingParameter(Name = "Events")]
     public IEnumerable<Event> Events
@@ -42,5 +43,10 @@
             _events = value;
 
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _userEventIds = (await EventService.GetSubscriptionsByIdentity()).Select(x => x.EventId).ToList();
     }
 }
