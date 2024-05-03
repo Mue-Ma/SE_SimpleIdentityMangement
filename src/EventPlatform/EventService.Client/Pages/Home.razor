@@ -13,7 +13,14 @@
 <h1>EventOverview</h1>
 <CascadingValue Value="@_events" Name="Events">
     <EventFilter EventsChanged="FilterHandler"></EventFilter>
-    <EventTable></EventTable>
+    <ErrorBoundary @ref="errorBoundary">
+        <ChildContent>
+            <EventTable></EventTable>
+        </ChildContent>
+        <ErrorContent>
+            <p class="my-custom-class">No events found</p>
+        </ErrorContent>
+    </ErrorBoundary>
 </CascadingValue>
 
 
@@ -31,9 +38,17 @@
 
     private IEnumerable<Event> _events = new List<Event>();
 
+    private ErrorBoundary? errorBoundary;
+
     protected override async Task OnInitializedAsync()
     {
         _events = await EventService.GetEvents();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        errorBoundary?.Recover();
     }
 
     private void NavigateToCreateEvent()

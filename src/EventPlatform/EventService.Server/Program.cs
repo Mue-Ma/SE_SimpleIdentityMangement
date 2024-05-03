@@ -68,8 +68,8 @@ app.UseCors(x => x
                .AllowAnyHeader()
                .AllowAnyOrigin());
 
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 app.UseSwagger(c =>
 {

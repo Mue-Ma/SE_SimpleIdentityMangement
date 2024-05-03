@@ -10,11 +10,25 @@
 
     <main>
         <article class="content px-4">
-            <ErrorBoundary>
-                @Body
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent Context="ex">
+                    <p class="my-custom-class">Whoa, sorry about that! Something went wrong! Here is the Error Message: @ex</p>
+                </ErrorContent>
             </ErrorBoundary>
         </article>
     </main>
 </div>
 
 <Toasts class="p-3" Delay=5000 Placement="ToastsPlacement.BottomRight" />
+
+@code {
+    private ErrorBoundary? errorBoundary;
+
+    protected override void OnParametersSet()
+    {
+        errorBoundary?.Recover();
+    }
+}

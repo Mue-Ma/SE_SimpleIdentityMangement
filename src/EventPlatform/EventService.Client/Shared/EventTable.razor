@@ -26,6 +26,21 @@
 </table>
 
 @code {
+    private IEnumerable<Event> _events = [];
+
     [CascadingParameter(Name = "Events")]
-    public IEnumerable<Event> Events { get; set; } = [];
+    public IEnumerable<Event> Events
+    {
+        get { return _events; }
+        set
+        {
+            if (!value.Any())
+            {
+                throw new Exception("");
+            }
+
+            _events = value;
+
+        }
+    }
 }

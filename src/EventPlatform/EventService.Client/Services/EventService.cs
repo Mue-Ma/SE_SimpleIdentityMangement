@@ -40,12 +40,7 @@ namespace EventService.Client.Services
 
         public async Task CreateEvent(Event ev)
         {
-            var response = await _authHttpClient.PostAsJsonAsync("http://localhost/eventservice/api/Event", ev);
-            if (!response.IsSuccessStatusCode)
-            {
-                string errorMessage = $"Error: {response.StatusCode}";
-                _navigationManager.NavigateTo($"/ErrorPages/ErrorPage?message={Uri.EscapeDataString(errorMessage)}");
-            }
+            await _publicHttpClient.PostAsJsonAsync("http://localhost/eventservice/api/Event", ev);
         }
         public async Task UpdateEvent(Event ev)
         {
@@ -67,9 +62,16 @@ namespace EventService.Client.Services
 
         public async Task<EventSubscription?> GetSubscriptionByEventIdAndIdentity(Guid subscriptionID)
         {
-            var res = await _authHttpClient.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{subscriptionID}");
-            if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<EventSubscription>();
-            return null;
+            try
+            {
+                var res = await _authHttpClient.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByEventIdAndIdentity/{subscriptionID}");
+                if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<EventSubscription>();
+                return null;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         public async Task<IEnumerable<EventSubscription>> GetSubscriptionsByEventId(Guid id)
@@ -80,10 +82,17 @@ namespace EventService.Client.Services
 
         public async Task<IEnumerable<EventSubscription>> GetSubscriptionsByIdentity()
         {
-            if (!await _identityService.IsUser()) return new List<EventSubscription>();
-            var res = await _authHttpClient.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByIdentity");
-            if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<IEnumerable<EventSubscription>>() ?? [];
-            return [];
+            try
+            {
+                if (!await _identityService.IsUser()) return new List<EventSubscription>();
+                var res = await _authHttpClient.GetAsync($"http://localhost/eventservice/api/EventSubscription/GetByIdentity");
+                if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<IEnumerable<EventSubscription>>() ?? [];
+                return [];
+            }
+            catch (Exception e)
+            {
+                return new List<EventSubscription>();
+            }
         }
 
         public async Task<EventSubscription?> RegisterForEvent(EventSubscription subscription)
