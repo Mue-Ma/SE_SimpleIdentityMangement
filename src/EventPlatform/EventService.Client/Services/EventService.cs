@@ -32,7 +32,10 @@ namespace EventService.Client.Services
         public async Task<IEnumerable<Event>> GetEventByFilter(string filter)
         {
             var evs = await GetEvents();
-            return evs.Where(e => e.Name.StartsWith(filter));
+
+            if(!string.IsNullOrEmpty(filter)) evs = evs.Where(e => e.Name.StartsWith(filter, StringComparison.CurrentCultureIgnoreCase));
+
+            return evs;
         }
 
         public async Task CreateEvent(Event ev)
