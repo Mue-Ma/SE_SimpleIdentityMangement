@@ -29,7 +29,7 @@ namespace EventService.Client.Services
                 ?? throw new Exception("Event not found");
         }
 
-        public async Task<IEnumerable<Event>> GetEventByFilter(string filter)
+        public async Task<IEnumerable<Event>> GetEventByFilter(string? filter)
         {
             var evs = await GetEvents();
 

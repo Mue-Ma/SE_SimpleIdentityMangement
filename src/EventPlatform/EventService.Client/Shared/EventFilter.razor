@@ -8,15 +8,13 @@
 
     [CascadingParameter(Name = "Events")]
     public IEnumerable<Event> FilteredEvents { get; set; } = [];
+    
     [Parameter]
     public EventCallback<IEnumerable<Event>> EventsChanged { get; set; }
 
     private async Task OnFilterChanged()
     {
-        if (!string.IsNullOrEmpty(FilterValue))
-        {
-            FilteredEvents = await EventService.GetEventByFilter(FilterValue);
-            await EventsChanged.InvokeAsync(FilteredEvents);
-        }
+        FilteredEvents = await EventService.GetEventByFilter(FilterValue);
+        await EventsChanged.InvokeAsync(FilteredEvents);
     }
 }

@@ -9,7 +9,7 @@ namespace EventService.Client.Services.Contracts
         Task CreateEvent(Event ev);
         Task UpdateEvent(Event ev);
         Task DeleteEvent(Guid id);
-        Task<IEnumerable<Event>> GetEventByFilter(string description);
+        Task<IEnumerable<Event>> GetEventByFilter(string? description);
         Task<IEnumerable<EventSubscription>> GetSubscriptionsByIdentity();
         Task<EventSubscription?> GetSubscriptionByEventIdAndIdentity(Guid id);
         Task<IEnumerable<EventSubscription>> GetSubscriptionsByEventId(Guid id);
