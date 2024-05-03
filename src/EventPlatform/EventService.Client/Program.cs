@@ -30,7 +30,7 @@ builder.Services.AddScoped(typeof(AccountClaimsPrincipalFactory<RemoteUserAccoun
 builder.Services.AddScoped<IIdentityService, IdentityService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IEventService, EventService.Client.Services.EventService>();
-builder.Services.AddScoped<HttpStatusCodeHandler>();
+builder.Services.AddScoped<HttpStatusCodeInterceptor>();
 
 builder.Services.AddHttpClientInterceptor();
 

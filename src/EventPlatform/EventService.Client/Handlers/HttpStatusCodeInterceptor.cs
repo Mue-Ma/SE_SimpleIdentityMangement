@@ -5,7 +5,7 @@ using Toolbelt.Blazor;
 
 namespace EventService.Client.Handlers
 {
-    public class HttpStatusCodeHandler(IMessageService messageService, HttpClientInterceptor httpClientInterceptor)
+    public class HttpStatusCodeInterceptor(IMessageService messageService, HttpClientInterceptor httpClientInterceptor)
     {
         private readonly IMessageService _messageService = messageService;
         private readonly HttpClientInterceptor _interceptor = httpClientInterceptor;
