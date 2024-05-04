@@ -5,6 +5,7 @@
 
 @inject IMessageService _messageService
 @inject HttpStatusCodeInterceptor _inteceptor
+@inject NavigationManager NavigationManager
 
 <div class="page">
     <div class="sidebar">
@@ -19,6 +20,7 @@
                 </ChildContent>
                 <ErrorContent Context="ex">
                     <p class="errorUI">😈 A rotten gremlin got us. Sorry!</p>
+                    <button class="btn btn-primary" @onclick="GoToMainPage">Back to Homepage</button>
                 </ErrorContent>
             </ErrorBoundary>
         </article>
@@ -32,6 +34,11 @@
     {
         await base.OnInitializedAsync();
         _inteceptor.RegisterEvent();
+    }
+
+    private void GoToMainPage()
+    {
+        NavigationManager.NavigateTo("/");
     }
 
     public void Dispose() => _inteceptor.DisposeEvent();

@@ -1,12 +1,9 @@
 ﻿@using EventService.Client.Pages
 @using EventService.Client.Shared
 
-@inject NavigationManager NavigationManager
-
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a style="font-size: x-large; font-weight:700">EventPlatform</a>
-        <button class="btn btn-primary" @onclick="GoToMainPage">Back to Homepage</button>
         <LogoutComponent />
     </div>
 </div>
@@ -21,8 +18,5 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    private void GoToMainPage()
-    {
-        NavigationManager.NavigateTo("/");
-    }
+
 }
