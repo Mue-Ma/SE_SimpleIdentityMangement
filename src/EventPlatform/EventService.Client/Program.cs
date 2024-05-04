@@ -47,7 +47,7 @@ else
     {
         client.BaseAddress = baseAddress;
         client.EnableIntercept(sp);
-    }).;
+    });
     builder.Services.AddHttpClient("Authorized", (sp, client) =>
     {
         client.BaseAddress = baseAddress;
