@@ -8,12 +8,18 @@ namespace EventService.Server.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+
     public class EventSubscriptionController(IEventSubscriptionRepository eventSubscriptionRepository) : ControllerBase
     {
         private readonly IEventSubscriptionRepository _eventSubscriptionRepository = eventSubscriptionRepository;
 
         [HttpGet("[action]/{eMail}")]
         [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEMail(string eMail)
         {
             var res = await _eventSubscriptionRepository.GetEntityByEMail(eMail);
@@ -22,6 +28,9 @@ namespace EventService.Server.Controllers
 
         [HttpGet("[action]/{id}")]
         [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByEventId(Guid id)
         {
             var res = await _eventSubscriptionRepository.GetEntityByEventId(id);
@@ -30,20 +39,36 @@ namespace EventService.Server.Controllers
 
         [HttpGet("[action]/{id}&&{eMail}")]
         [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<EventSubscription>> GetByEventIdAndEmail(Guid id, string eMail)
         {
             var res = (await _eventSubscriptionRepository.GetEntityByEventId(id)).FirstOrDefault(s => s.EMail.Equals(eMail));
             return res != null ? Ok(res) : NotFound();
         }
 
+        /// <summary>
+        /// Returns all eventsubscriptions according to the identity name in the JWT
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("[action]")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<EventSubscription>>> GetByIdentity()
         {
             var res = await _eventSubscriptionRepository.GetEntityByEMail(User?.Identity?.Name ?? "");
             return res != null ? Ok(res) : NotFound();
         }
 
+        /// <summary>
+        /// Returns the event subscription according to the identity name in the JWT and the given EventId
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>EventSubscription</returns>
         [HttpGet("[action]/{id}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<EventSubscription>> GetByEventIdAndIdentity(Guid id)
         {
             var res = (await _eventSubscriptionRepository.GetEntityByEMail(User?.Identity?.Name ?? "")).FirstOrDefault(s => s.EventId.Equals(id));
@@ -51,23 +76,42 @@ namespace EventService.Server.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Guid>> Post([FromBody] EventSubscription eventSubscription)
         {
-            eventSubscription.EMail = User?.Identity?.Name ?? "";
+            if(string.IsNullOrEmpty(User?.Identity?.Name ?? "")) return BadRequest("No valid identity name");
+            if (GetByEventIdAndIdentity(eventSubscription.EventId) != null) return BadRequest("Subscription already exists");
+
+            eventSubscription.EMail = User?.Identity?.Name!;
             await _eventSubscriptionRepository.Add(eventSubscription);
-            return eventSubscription.Id;
+            var locationUri = $"{Request.Host}/EventSubscription/{eventSubscription.Id}";
+
+            return Created(locationUri, eventSubscription);
         }
 
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> Put([FromBody] EventSubscription eventSubscription)
         {
+            var sub = await _eventSubscriptionRepository.GetEntityById(eventSubscription.Id);
+            if (sub == null) return BadRequest("No Element was found with the given id");
+            if (!(User.IsInRole("admin") || (User.Identity?.Name ?? "") == sub.EMail)) return Forbid();
+
             await _eventSubscriptionRepository.Update(eventSubscription);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Delete(Guid id)
         {
+            var sub = await _eventSubscriptionRepository.GetEntityById(id);
+            if (sub == null) return BadRequest("No Element was found with the given id");
+            if(!(User.IsInRole("admin") || (User.Identity?.Name ?? "") == sub.EMail)) return Forbid();
+
             await _eventSubscriptionRepository.Delete(id);
             return NoContent();
         }

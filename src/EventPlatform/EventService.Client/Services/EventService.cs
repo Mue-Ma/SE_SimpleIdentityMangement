@@ -32,10 +32,7 @@ namespace EventService.Client.Services
         public async Task<IEnumerable<Event>> GetEventByFilter(string? filter)
         {
             var evs = await GetEvents();
-
-            if (!string.IsNullOrEmpty(filter)) evs = evs.Where(e => e.Name.StartsWith(filter, StringComparison.CurrentCultureIgnoreCase));
-
-            return evs;
+            return await _publicHttpClient.GetFromJsonAsync<IEnumerable<Event>>($"api/Event/GetByFilter") ?? [];
         }
 
         public async Task CreateEvent(Event ev)
