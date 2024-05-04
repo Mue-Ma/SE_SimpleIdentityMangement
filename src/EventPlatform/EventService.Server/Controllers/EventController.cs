@@ -7,6 +7,7 @@ namespace EventService.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public class EventController(IEventRepository eventRepository) : ControllerBase
     {
@@ -74,14 +75,15 @@ namespace EventService.Server.Controllers
         }
 
         /// <summary>
-        /// Returns events according to the filter string which applies to "name -> description -> start date -> end date"
+        /// Returns events according to the filter string which applies to "name -> description"
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
-        [HttpGet("[action]/{filter}")]
+        [HttpGet("[action]/{filter?}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Event>>> GetByFilter(string filter)
+        public async Task<ActionResult<IEnumerable<Event>>> GetByFilter(string filter = "")
         {
+            if (string.IsNullOrEmpty(filter)) return await Get();
             return Ok(await _eventRepository.GetEntityByFilter(filter));
         }
     }

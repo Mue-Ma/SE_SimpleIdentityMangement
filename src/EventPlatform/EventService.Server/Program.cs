@@ -5,6 +5,7 @@ using EventService.Server.Persistence.Contracts;
 using Keycloak.AuthServices.Authentication;
 using Keycloak.AuthServices.Common;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,10 +56,20 @@ builder.Services.AddSwaggerGen(c =>
         }
     };
     c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Event Service API",
+        Version = "v1",
+        Description = "Simple CRUD and query operations to manage events"
+    });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {securityScheme, Array.Empty<string>()}
     });
+    // Set the comments path for the Swagger JSON and UI.
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
 var app = builder.Build();

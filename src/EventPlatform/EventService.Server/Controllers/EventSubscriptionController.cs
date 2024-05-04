@@ -5,9 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EventService.Server.Controllers
 {
+    /// <response code="403">Admin role is required</response>
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 
@@ -65,7 +67,7 @@ namespace EventService.Server.Controllers
         /// Returns the event subscription according to the identity name in the JWT and the given EventId
         /// </summary>
         /// <param name="id"></param>
-        /// <returns>EventSubscription</returns>
+
         [HttpGet("[action]/{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -75,17 +77,34 @@ namespace EventService.Server.Controllers
             return res != null ? Ok(res) : NotFound();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="eventSubscription"></param>
+        /// <returns>Returns the newly created item and the uri of the ressource</returns>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /api/Event
+        ///     {
+        ///        "eventId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        ///        "companions": 5
+        ///     }
+        ///
+        /// </remarks>
+        /// <response code="201">Returns the newly created item and the uri of the ressource</response>
+        /// <response code="400">If their is o valid identity name or the subscription already exists</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Guid>> Post([FromBody] EventSubscription eventSubscription)
         {
             if(string.IsNullOrEmpty(User?.Identity?.Name ?? "")) return BadRequest("No valid identity name");
-            if (GetByEventIdAndIdentity(eventSubscription.EventId) != null) return BadRequest("Subscription already exists");
+            if ((await GetByEventIdAndIdentity(eventSubscription.EventId)).Value != null) return BadRequest("Subscription already exists");
 
             eventSubscription.EMail = User?.Identity?.Name!;
             await _eventSubscriptionRepository.Add(eventSubscription);
-            var locationUri = $"{Request.Host}/EventSubscription/{eventSubscription.Id}";
+            var locationUri = $"{Request.Host}/EventSubscription/GetByEventIdAndIdentity/{eventSubscription.EventId}";
 
             return Created(locationUri, eventSubscription);
         }
@@ -109,7 +128,7 @@ namespace EventService.Server.Controllers
         public async Task<ActionResult> Delete(Guid id)
         {
             var sub = await _eventSubscriptionRepository.GetEntityById(id);
-            if (sub == null) return BadRequest("No Element was found with the given id");
+            if (sub == null) return BadRequest("No element was found with the given id");
             if(!(User.IsInRole("admin") || (User.Identity?.Name ?? "") == sub.EMail)) return Forbid();
 
             await _eventSubscriptionRepository.Delete(id);

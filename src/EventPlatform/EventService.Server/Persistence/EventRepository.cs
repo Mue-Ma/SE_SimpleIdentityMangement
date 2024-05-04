@@ -1,6 +1,8 @@
 ﻿using EventService.Server.Core.Entities;
 using EventService.Server.Persistence.Contracts;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Xml.Linq;
 
 namespace EventService.Server.Persistence
 {
@@ -38,7 +40,10 @@ namespace EventService.Server.Persistence
 
         public async Task<IEnumerable<Event>> GetEntityByFilter(string filter)
         {
-            return await EntityDbSet.Find(Builders<Event>.Filter.Text(filter)).ToListAsync();
+            return await EntityDbSet.Find(
+                Builders<Event>.Filter.Regex("Name", new BsonRegularExpression($"(?i).*{filter}.*")) |
+                Builders<Event>.Filter.Regex("Description", new BsonRegularExpression($"(?i).*{filter}.*"))
+                ).ToListAsync();
         }
 
         public async Task<Event?> GetByName(string name)

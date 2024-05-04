@@ -18,32 +18,32 @@ namespace EventService.Client.Handlers
 
             switch (response.StatusCode)
             {
-                case HttpStatusCode.OK:
-                    _messageService.ShowMessage(ToastType.Success, "Ok");
-                    break;
-
                 case HttpStatusCode.Created:
-                    _messageService.ShowMessage(ToastType.Success, "Event created");
+                    _messageService.ShowMessage(ToastType.Success, $"Successfuly created item!");
                     break;
 
                 case HttpStatusCode.BadRequest:
-                    _messageService.ShowMessage(ToastType.Danger, "Eventname already existing!");
+                    _messageService.ShowMessage(ToastType.Danger, "Something was not executed right!");
                     break;
 
                 case HttpStatusCode.NotFound:
-                    _messageService.ShowMessage(ToastType.Warning, "Event not found");
+                    _messageService.ShowMessage(ToastType.Warning, "Something was not found!");
                     break;
 
                 case HttpStatusCode.Unauthorized:
-                    _messageService.ShowMessage(ToastType.Info, "Unauthorized access");
+                    _messageService.ShowMessage(ToastType.Info, "You need to login to access all ressources!");
                     break;
 
                 case HttpStatusCode.InternalServerError:
-                    _messageService.ShowMessage(ToastType.Info, "Internal server error");
+                    _messageService.ShowMessage(ToastType.Danger, "Something unexpected happend!");
+                    break;
+
+                case HttpStatusCode.Forbidden:
+                    _messageService.ShowMessage(ToastType.Info, "You need another role to access all ressources!");
                     break;
 
                 case HttpStatusCode.NoContent:
-                    _messageService.ShowMessage(ToastType.Success, "Event deleted");
+                    _messageService.ShowMessage(ToastType.Success, "Action was successful!");
                     break;
 
                 default:

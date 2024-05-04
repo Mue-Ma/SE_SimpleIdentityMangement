@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EventService.Server.Core.Entities
 {
+    /// <summary>Represents an event</summary>
     public class Event
     {
         public Guid Id { get; set; }
