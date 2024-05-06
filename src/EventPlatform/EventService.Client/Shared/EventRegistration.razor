@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+@inject IIdentityService IdentityService
+@inject IEventService EventService
+
+@attribute [Authorize(Roles = "user")]
+
+<AuthorizeView Roles="user">
+    <h2>Registrierung</h2>
+    <hr />
+
+    <dl class="row">
+        <div class="form-group">
+            <dt class="col-sm-2">Anzahl Begleiter</dt>
+            <input type="number" id="companions" @bind="_currentUserSubscription.Companions" class="form-control" />
+        </div>
+    </dl>
+
+    <div class="form-group">
+        @if (!string.IsNullOrEmpty(_currentUserSubscription.EMail))
+        {
+            <button class="btn btn-outline-primary" @onclick="Deregister">
+                Abmelden
+            </button>
+            <button class="btn btn-outline-primary" @onclick="() => EventService.UpdateSubscription(_currentUserSubscription)">Begleiteranzahl ändern</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="Register">Anmelden</button>
+        }
+    </div>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter(Name = "EventId")]
+    public Guid Id { get; set; }
+    private EventSubscription _currentUserSubscription { get; set; } = new();
+    public EventSubscriptionOverview _eventSubscriptionOverview = new EventSubscriptionOverview([]);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUserSubscription = await EventService.GetSubscriptionByEventIdAndIdentity(Id) ?? new EventSubscription() { EventId = Id };
+    }
+
+    private async Task Register()
+    {
+        _currentUserSubscription = (await EventService.RegisterForEvent(_currentUserSubscription))!;
+    }
+
+    private async Task Deregister()
+    {
+        await EventService.DeleteSubscription(_currentUserSubscription.Id);
+        _currentUserSubscription = new EventSubscription() { EventId = Id };
+    }
+}

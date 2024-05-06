@@ -1,0 +1,45 @@
+﻿@inject IEventService EventService
+@inject IIdentityService IdentityService
+@inject NavigationManager Navigation
+
+<EditForm Model="@_eventToShow" OnValidSubmit="() => EventService.UpdateEvent(_eventToShow)">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <dt class="col-sm-2">Event Name</dt>
+        <InputText id="Name" class="form-control" @bind-Value="_eventToShow.Name" disabled=@_isNotAdmin />
+    </div>
+
+    <div class="form-group">
+        <dt class="col-sm-2">Start Date</dt>
+        <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="_eventToShow.StartDate" disabled=@_isNotAdmin />
+    </div>
+
+    <div class="form-group">
+        <dt class="col-sm-2">End Date</dt>
+        <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="_eventToShow.EndDate" disabled=@_isNotAdmin />
+    </div>
+
+    <div class="form-group">
+        <dt class="col-sm-2">Description</dt>
+        <InputText id="Name" class="form-control" @bind-Value="_eventToShow.Description" disabled=@_isNotAdmin />
+    </div>
+
+    <EventDetailActions></EventDetailActions>
+
+</EditForm>
+
+@code {
+    private bool _isNotAdmin { get; set; }
+    private Event _eventToShow { get; set; } = new();
+
+    [CascadingParameter(Name = "EventId")]
+    public Guid Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isNotAdmin = !(await IdentityService.IsAdmin());
+        _eventToShow = await EventService.GetEventById(Id);
+    }
+}

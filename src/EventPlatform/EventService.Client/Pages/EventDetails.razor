@@ -1,154 +1,16 @@
 ﻿@page "/EventDetails/{id:guid}"
 
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
-
-@inject NavigationManager NavigationManager
-@inject IIdentityService IdentityService
-@inject IEventService EventService
 
 <h1>EventDetails</h1>
 
-<AuthorizeView>
-    <dl class="row">
-
-        @if (_eventToShow != null)
-        {
-            <EditForm Model="@_eventToShow" Context="editContext" OnValidSubmit="() => EventService.UpdateEvent(_eventToShow)">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-
-                <div class="form-group">
-                    <dt class="col-sm-2">Event Name</dt>
-                    <InputText id="Name" class="form-control" @bind-Value="_eventToShow.Name" disabled=@_isNotAdmin />
-                </div>
-
-                <div class="form-group">
-                    <dt class="col-sm-2">Start Date</dt>
-                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="_eventToShow.StartDate" disabled=@_isNotAdmin />
-                </div>
-
-                <div class="form-group">
-                    <dt class="col-sm-2">End Date</dt>
-                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value:format="dd/MM/yyyy hh:mm:ss" @bind-Value="_eventToShow.EndDate" disabled=@_isNotAdmin />
-                </div>
-
-                <div class="form-group">
-                    <dt class="col-sm-2">Description</dt>
-                    <InputText id="Name" class="form-control" @bind-Value="_eventToShow.Description" disabled=@_isNotAdmin />
-                </div>
-
-                <AuthorizeView Roles="admin" Context="adminContext">
-                    <button class="btn btn-outline-primary" type="submit">Aktualisieren</button>
-                    <button class="btn btn-outline-primary" @onclick="DeleteEvent">Löschen</button>
-                </AuthorizeView>
-
-            </EditForm>
-
-            <AuthorizeView Roles="admin" Context="adminContext">
-
-                <h2>Aktuelle Anmeldungen</h2>
-                <hr />
-
-                <div class="form-group">
-                    <dt class="col-sm-2">Registrierungen: </dt>
-                    <dd class="col-sm-2">@_eventSubscriptionOverview.RegistrationCount</dd>
-                </div>
-
-                <div class="form-group">
-                    <dt class="col-sm-2">Gesamtbesucheranzahl: </dt>
-                    <dd class="col-sm-2">@_eventSubscriptionOverview.TotalAmontVisitors</dd>
-                </div>
-                <div class="form-group">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Benutzer</th>
-                                <th>Anzahl Begleiter</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var subscriptionForAdmin in _eventSubscriptionOverview.EventSubscriptions)
-                            {
-                                <tr>
-                                    <td>@subscriptionForAdmin.EMail</td>
-                                    <td>@subscriptionForAdmin.Companions</td>
-                                    <td><button class="btn btn-outline-primary" @onclick="() => EventService.DeleteSubscription(subscriptionForAdmin.Id)">Abmelden</button></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </AuthorizeView>
-
-            <AuthorizeView Roles="user" Context="innerUserContext">
-                <h2>Registrierung</h2>
-                <hr />
-
-                <div class="form-group">
-                    <dt class="col-sm-2">Anzahl Begleiter</dt>
-                    <input type="number" id="companions" @bind="_currentUserSubscription.Companions" class="form-control" />
-                </div>
-                <div class="form-group">
-                    @if (!string.IsNullOrEmpty(_currentUserSubscription.EMail))
-                    {
-                        <button class="btn btn-outline-primary" @onclick="Deregister"> Abmelden
-                        </button>
-                        <button class="btn btn-outline-primary" @onclick="() => EventService.UpdateSubscription(_currentUserSubscription)">Begleiteranzahl ändern</button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-primary" @onclick="Register">Anmelden</button>
-                    }
-                </div>
-            </AuthorizeView>
-        }
-        else
-        {
-            <p>Event not found</p>
-        }
-    </dl>
-</AuthorizeView>
+<CascadingValue Value="@Id" Name="EventId">
+    <EventDetailOverview></EventDetailOverview>
+    <EventSubscriptionsTable></EventSubscriptionsTable>
+    <EventRegistration></EventRegistration>
+</CascadingValue>
 
 @code {
     [Parameter]
     public Guid Id { get; set; }
-
-    private bool _isNotAdmin { get; set; }
-
-    private EventSubscription _currentUserSubscription { get; set; } = new();
-    private Event _eventToShow { get; set; } = new();
-    public EventSubscriptionOverview _eventSubscriptionOverview = new EventSubscriptionOverview([]);
-
-    protected override async Task OnInitializedAsync()
-    {
-        _isNotAdmin = !(await IdentityService.IsAdmin());
-        _eventToShow = await EventService.GetEventById(Id);
-        _currentUserSubscription = await EventService.GetSubscriptionByEventIdAndIdentity(Id) ?? new EventSubscription() { EventId = Id };
-        await FetchSubscriptionInfoForAdmin();
-    }
-
-    private async Task FetchSubscriptionInfoForAdmin()
-    {
-        if (_isNotAdmin) return;
-        _eventSubscriptionOverview = new EventSubscriptionOverview(await EventService.GetSubscriptionsByEventId(Id));
-    }
-
-    private async Task DeleteEvent()
-    {
-        await EventService.DeleteEvent(_eventToShow.Id);
-        NavigationManager.NavigateTo("/");
-    }
-
-    private async Task Register()
-    {
-        _currentUserSubscription = (await EventService.RegisterForEvent(_currentUserSubscription))!;
-    }
-
-    private async Task Deregister()
-    {
-        await EventService.DeleteSubscription(_currentUserSubscription.Id);
-        _currentUserSubscription = new EventSubscription() { EventId = Id };
-    }
 }

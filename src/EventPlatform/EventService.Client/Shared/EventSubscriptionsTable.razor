@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject IEventService EventService
+
+@attribute [Authorize(Roles = "admin")]
+
+<AuthorizeView Roles="admin">
+    <h2>Aktuelle Anmeldungen</h2>
+    <hr />
+    <dl class="row">
+        <div class="form-group">
+            <dt class="col-sm-2">Registrierungen: </dt>
+            <dd class="col-sm-2">@_eventSubscriptionOverview.RegistrationCount</dd>
+        </div>
+
+        <div class="form-group">
+            <dt class="col-sm-2">Gesamtbesucheranzahl: </dt>
+            <dd class="col-sm-2">@_eventSubscriptionOverview.TotalAmontVisitors</dd>
+        </div>
+    </dl>
+    <div class="form-group">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Benutzer</th>
+                    <th>Anzahl Begleiter</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var subscriptionForAdmin in _eventSubscriptionOverview.EventSubscriptions)
+                {
+                    <tr>
+                        <td>@subscriptionForAdmin.EMail</td>
+                        <td>@subscriptionForAdmin.Companions</td>
+                        <td><button class="btn btn-outline-primary" @onclick="() => EventService.DeleteSubscription(subscriptionForAdmin.Id)">Abmelden</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter(Name = "EventId")]
+    public Guid Id { get; set; }
+    private EventSubscriptionOverview _eventSubscriptionOverview = new EventSubscriptionOverview([]);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _eventSubscriptionOverview = new EventSubscriptionOverview(await EventService.GetSubscriptionsByEventId(Id));
+    }
+}

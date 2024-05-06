@@ -3,7 +3,6 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 
-@inject NavigationManager NavigationManager
 @inject IEventService EventService
 
 @attribute [AllowAnonymous]
@@ -23,16 +22,7 @@
     </ErrorBoundary>
 </CascadingValue>
 
-
-<AuthorizeView Roles="admin">
-    <Authorized>
-        <button class="btn btn-primary"
-                style=" position: fixed; bottom: 40px; right: 40px; font-size: large; font-weight: 600; border-radius: 50px; padding: 15px"
-                @onclick="() => NavigateToCreateEvent()">
-            Create Event
-        </button>
-    </Authorized>
-</AuthorizeView>
+<CreateEventButton></CreateEventButton>
 
 @code {
 
@@ -49,11 +39,6 @@
     {
         await base.OnAfterRenderAsync(firstRender);
         errorBoundary?.Recover();
-    }
-
-    private void NavigateToCreateEvent()
-    {
-        NavigationManager.NavigateTo("CreateEvent");
     }
 
     private void FilterHandler(IEnumerable<Event> events)

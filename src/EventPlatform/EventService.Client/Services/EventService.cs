@@ -2,6 +2,7 @@
 using EventService.Client.Models;
 using EventService.Client.Services.Contracts;
 using Microsoft.AspNetCore.Components;
+using System.Collections.Generic;
 using System.Net.Http.Json;
 
 namespace EventService.Client.Services
@@ -57,8 +58,9 @@ namespace EventService.Client.Services
 
         public async Task<IEnumerable<EventSubscription>> GetSubscriptionsByEventId(Guid id)
         {
-            return (await _authHttpClient.GetFromJsonAsync<IEnumerable<EventSubscription>?>($"api/EventSubscription/GetByEventId/{id}"))
-                ?? [];
+            var res = await _authHttpClient.GetAsync($"api/EventSubscription/GetByEventId/{id}");
+            if (res.IsSuccessStatusCode) return await res.Content.ReadFromJsonAsync<IEnumerable<EventSubscription>>() ?? [];
+            else return [];
         }
 
         public async Task<IEnumerable<EventSubscription>> GetSubscriptionsByIdentity()

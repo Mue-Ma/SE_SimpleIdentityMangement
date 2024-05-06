@@ -1,0 +1,17 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+
+<AuthorizeView Roles="admin">
+    <button class="btn btn-primary"
+            style=" position: fixed; bottom: 40px; right: 40px; font-size: large; font-weight: 600; border-radius: 50px; padding: 15px"
+            @onclick="() => NavigateToCreateEvent()">
+        Create Event
+    </button>
+</AuthorizeView>
+
+@code {
+    private void NavigateToCreateEvent()
+    {
+        NavigationManager.NavigateTo("CreateEvent");
+    }
+}
