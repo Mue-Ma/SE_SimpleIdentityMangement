@@ -18,6 +18,6 @@ namespace EventService.Client.Services
         public async Task<bool> IsAdmin() => (await GetClaimsPrincipal()).IsInRole("admin");
         public async Task<bool> IsUser() => (await GetClaimsPrincipal()).IsInRole("user");
         public async Task<bool> IsAuthenticated() => (await GetClaimsPrincipal()).Identity?.IsAuthenticated ?? false;
-        
+
     }
 }

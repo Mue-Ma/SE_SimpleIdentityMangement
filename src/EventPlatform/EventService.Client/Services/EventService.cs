@@ -1,8 +1,6 @@
-﻿using BlazorBootstrap;
-using EventService.Client.Models;
+﻿using EventService.Client.Models;
 using EventService.Client.Services.Contracts;
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
 using System.Net.Http.Json;
 
 namespace EventService.Client.Services

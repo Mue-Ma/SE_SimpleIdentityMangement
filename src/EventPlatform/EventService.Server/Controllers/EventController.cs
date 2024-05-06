@@ -41,7 +41,7 @@ namespace EventService.Server.Controllers
         public async Task<ActionResult<Guid>> Post([FromBody] Event ev)
         {
             if (await _eventRepository.GetByName(ev.Name) != null) return BadRequest("Eventname existiert bereits!");
-            
+
             await _eventRepository.Add(ev);
             var locationUri = $"{Request.Host}/Event/{ev.Id}";
 
@@ -69,7 +69,7 @@ namespace EventService.Server.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> Delete(Guid id)
         {
-            if((await Get(id)) == null) return BadRequest("No Element was found with the given id");
+            if ((await Get(id)) == null) return BadRequest("No Element was found with the given id");
             await _eventRepository.Delete(id);
             return NoContent();
         }

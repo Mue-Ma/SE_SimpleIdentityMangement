@@ -99,7 +99,7 @@ namespace EventService.Server.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Guid>> Post([FromBody] EventSubscription eventSubscription)
         {
-            if(string.IsNullOrEmpty(User?.Identity?.Name ?? "")) return BadRequest("No valid identity name");
+            if (string.IsNullOrEmpty(User?.Identity?.Name ?? "")) return BadRequest("No valid identity name");
             if ((await GetByEventIdAndIdentity(eventSubscription.EventId)).Value != null) return BadRequest("Subscription already exists");
 
             eventSubscription.EMail = User?.Identity?.Name!;
@@ -129,7 +129,7 @@ namespace EventService.Server.Controllers
         {
             var sub = await _eventSubscriptionRepository.GetEntityById(id);
             if (sub == null) return BadRequest("No element was found with the given id");
-            if(!(User.IsInRole("admin") || (User.Identity?.Name ?? "") == sub.EMail)) return Forbid();
+            if (!(User.IsInRole("admin") || (User.Identity?.Name ?? "") == sub.EMail)) return Forbid();
 
             await _eventSubscriptionRepository.Delete(id);
             return NoContent();

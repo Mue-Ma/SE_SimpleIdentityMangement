@@ -2,7 +2,6 @@
 using EventService.Server.Persistence.Contracts;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System.Xml.Linq;
 
 namespace EventService.Server.Persistence
 {
