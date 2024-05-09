@@ -1,19 +1,15 @@
 ﻿using EventService.Client.Models;
 using EventService.Client.Services.Contracts;
-using Microsoft.AspNetCore.Components;
 using System.Net.Http.Json;
 
 namespace EventService.Client.Services
 {
-    public class EventService(IHttpClientFactory httpClient, NavigationManager navigationManager,
-        IIdentityService identityService, IMessageService messageService) : IEventService
+    public class EventService(IHttpClientFactory httpClient, IIdentityService identityService) : IEventService
     {
         private readonly IIdentityService _identityService = identityService;
-        private readonly IMessageService _messageService = messageService;
 
         private readonly HttpClient _authHttpClient = httpClient.CreateClient("Authorized");
         private readonly HttpClient _publicHttpClient = httpClient.CreateClient("Public");
-        private readonly NavigationManager _navigationManager = navigationManager;
 
 
         public async Task<IEnumerable<Event>> GetEvents()
