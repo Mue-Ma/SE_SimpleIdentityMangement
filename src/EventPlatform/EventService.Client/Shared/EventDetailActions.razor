@@ -4,12 +4,12 @@
 
 <AuthorizeView Roles="admin">
     <button class="btn btn-outline-primary" type="submit">Aktualisieren</button>
-    <button class="btn btn-outline-primary" @onclick="DeleteEvent">Löschen</button>
+    <button class="btn btn-outline-primary" type="reset" @onclick="DeleteEvent">Löschen</button>
 </AuthorizeView>
 
 
 @code {
-    [Parameter]
+    [CascadingParameter(Name = "EventId")]
     public Guid Id { get; set; }
 
     private async Task DeleteEvent()

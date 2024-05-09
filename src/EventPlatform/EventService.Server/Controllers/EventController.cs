@@ -56,7 +56,7 @@ namespace EventService.Server.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> Put([FromBody] Event ev)
         {
-            if ((await Get(ev.Id)) == null) return BadRequest("No Element was found with the given id");
+            if (await _eventRepository.GetEntityById(ev.Id) == null) return BadRequest("No Element was found with the given id");
             await _eventRepository.Update(ev);
             return NoContent();
         }
@@ -69,7 +69,7 @@ namespace EventService.Server.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult> Delete(Guid id)
         {
-            if ((await Get(id)) == null) return BadRequest("No Element was found with the given id");
+            if(await _eventRepository.GetEntityById(id) == null) return BadRequest("No Element was found with the given id");
             await _eventRepository.Delete(id);
             return NoContent();
         }
