@@ -11,7 +11,6 @@ namespace EventService.Client.Services
         private readonly HttpClient _authHttpClient = httpClient.CreateClient("Authorized");
         private readonly HttpClient _publicHttpClient = httpClient.CreateClient("Public");
 
-
         public async Task<IEnumerable<Event>> GetEvents()
         {
             return await _publicHttpClient.GetFromJsonAsync<IEnumerable<Event>>($"api/Event") ?? [];
