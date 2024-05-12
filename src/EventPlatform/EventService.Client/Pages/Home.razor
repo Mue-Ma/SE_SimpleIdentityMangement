@@ -12,7 +12,7 @@
 <h1>EventOverview</h1>
 <CascadingValue Value="@_events" Name="Events">
     <EventFilter EventsChanged="FilterHandler"></EventFilter>
-    <ErrorBoundary @ref="errorBoundary">
+    <ErrorBoundary @ref="_errorBoundary">
         <ChildContent>
             <EventTable></EventTable>
         </ChildContent>
@@ -28,7 +28,7 @@
 
     private IEnumerable<Event> _events = new List<Event>();
 
-    private ErrorBoundary? errorBoundary;
+    private ErrorBoundary? _errorBoundary;
 
     protected override async Task OnInitializedAsync()
     {
@@ -38,7 +38,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        errorBoundary?.Recover();
+        _errorBoundary?.Recover();
     }
 
     private void FilterHandler(IEnumerable<Event> events)
