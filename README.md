@@ -1,20 +1,18 @@
-# SE_UE2_SimpleIdentityMangement
-Bevor die Anwendung gestartet wird muss Docker Desktop gestartet sein.
-Zum starten der Anwendung zu /inf navigieren und dock-init.ps1 in der PowerShell ausführen.
-## Erstellen Sie ein einfaches Service (Themen siehe unten) mit folgenden Eigenschaften:
-- Einfache Client/Server-Kommunikation
-- Authentifizierung
-- Zwei einfache Ansichten (Listenansicht, Detailansicht)
-- CRUD-Operationen (create, read, update, delete)
-- Einfache serverseitige Datenhaltung, z.B. noSQL-DB, mySQL, Datei-basiert
-- Technologieauswahl
-## Funktionalität
-- EventService – Verwalten von Teilnehmern einer Veranstaltung.
-> 1. Einfache Benutzer: können sich mit e-mail-Adresse zu einer Veranstaltung registrieren und ein
-Passwort angeben, um später Änderungen vorzunehmen (Abmelden, geänderte Anzahl von Begleitpersonen)
-> 2. Administrator: hat Liste aller registrierten Teilnehmer (inkl. Gesamtanzahl von Begleitpersonen)
-und kann einzelne Anmeldungen inspizieren.
-## Plattform zur Authentifizierung
+# SE_UE2_SimpleIdentityManagement
+Before starting the application, Docker Desktop must be started.
+To start the application, navigate to /inf and run dock-init.ps1 in PowerShell.
+## Create a simple service (topics below) with the following features:
+- Simple client/server communication
+- Authentication
+- Two simple views (list view, detail view)
+- CRUD operations (create, read, update, delete)
+- Simple server-side data storage, e.g., NoSQL-DB, MySQL, file-based
+- Technology selection
+## Functionality
+- EventService – Managing participants of an event.
+  1. Simple users: can register for an event with their email address and provide a password to make changes later (unregister, change number of accompanying persons)
+  2. Administrator: has a list of all registered participants (including the total number of accompanying persons) and can inspect individual registrations.
+## Authentication platform
 - Keycloak: https://www.keycloak.org/
-- Auswahl einer anderen Plattform ist zulässig.
+- Selection of another platform is permissible.
 
